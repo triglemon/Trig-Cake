@@ -14,8 +14,6 @@ If you found a bug or have a new idea/feature for the program, [you can report t
   Student, Graphic Designer, Programmer
 
 ## License
-This program is distributed under the following license:
+See [LICENSE](https://github.com/triglemon/Trig-Cake/blob/master/LICENSE.txt) for more details.
 
-TODO: 
-- [ ] choose a license
-- [ ] add license file
+
