@@ -15,8 +15,7 @@ If you found a bug or have a new idea/feature for the program, [you can report t
   Student, Graphic Designer, Programmer
 
 ## License
-Copyright (c) 2018 Rob Liu
-
+Copyright (c) 2018 Rob Liu <br />
 See [LICENSE](https://github.com/triglemon/Trig-Cake/blob/master/LICENSE.txt) for more details.
 
 
