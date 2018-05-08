@@ -9,7 +9,7 @@ List of [known issues](https://github.com/triglemon/Trig-Cake/issues), which inc
 If you found a bug or have a new idea/feature for the program, [you can report them](https://github.com/triglemon/Trig-Cake/issues/new).
 
 ## Authors
-* Rob Liu (insert psuedonym) <br />
+* Rob Liu (triglemon) <br />
   Student
 * Jonathan Law ([dryshirt](https://dryshirt.github.io)) <br />
   Student, Graphic Designer, Programmer
