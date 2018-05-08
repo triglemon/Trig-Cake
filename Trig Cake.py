@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+
+
 import discord
 import asyncio
 from bs4 import BeautifulSoup as soup
@@ -6,7 +9,7 @@ from datetime import datetime as dt
 
 
 client = discord.Client()
-token = 'NDM4NDI5MDYzODc5NzIwOTYw.DcEe4g.KfpWk9mlfubVU2g0TIIrmuBNUxA'
+token = 'NDM4NDI5MDYzODc5NzIwOTYw.DdJ4LQ.9Bl_wH1B5XL2B3o2QlyDOsxlaKw'
 
 # Documentation:
 # [game]u = url
@@ -22,6 +25,7 @@ token = 'NDM4NDI5MDYzODc5NzIwOTYw.DcEe4g.KfpWk9mlfubVU2g0TIIrmuBNUxA'
 @client.event
 async def background_loop():
     await client.wait_until_ready()
+    print("All hands on deck!")
     while not client.is_closed:
 
         """Overwatch"""
