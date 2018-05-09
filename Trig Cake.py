@@ -9,7 +9,7 @@ from datetime import datetime as dt
 
 
 client = discord.Client()
-token = open("token").read()
+token = open("/home/pi/Desktop/token").read()
 
 # Documentation:
 # [game]u = url
