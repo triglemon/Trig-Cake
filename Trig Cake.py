@@ -45,12 +45,11 @@ async def background_loop():
         # message trigger
         if overwatch1 != overwatch0:
             overwatchh = overwatch1r.find_all("h2")
-            overwatchht = "Contents:"
+            overwatchht = "contents:"
             for x in overwatchh:
-                if x.text != "PATCH HIGHLIGHTS":
-                    overwatchht += (" " + x.text + ",")
+                overwatchht += (" " + x.text.lower() + ",")
             overwatchht = overwatchht[:-1] + "."
-            overwatchm = "Overwatch PC Patch Notes has been updated.\n" + overwatchht + "\nhttps://playoverwatch.com/en-us/game/patch-notes/pc/\n%s" % dt.today()
+            overwatchm = "Overwatch patch " + overwatchht + "\n<" + overwatchurl + ">"
             overwatch0 = overwatch1
             await client.send_message(discord.Object(id="328295970246754304"), overwatchm)
 
@@ -62,15 +61,14 @@ async def background_loop():
             page = doc.read()
         fortnite = soup(page, "html.parser")
         fortnite1r = fortnite.find("media:group")
-        fortnite1 = fortnite1r.text
-        fortniteht = fortnite1r.find("media:title").text
+        fortnite1 = fortnite1r.find("media:title").text
         try:
             fortnite0
         except NameError:
             fortnite0 = fortnite1
         # message trigger
         if fortnite1 != fortnite0:
-            fortnitem = "Fortnite: " + fortniteht + "\nhttps://www.youtube.com/user/epicfortnite/videos\n%s" % dt.today()
+            fortnitem = "Fortnite: " + fortnite1 + "\n<https://www.youtube.com/user/epicfortnite/videos>"
             fortnite0 = fortnite1
             await client.send_message(discord.Object(id="328295970246754304"), fortnitem)
         # print("looped")
