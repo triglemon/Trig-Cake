@@ -13,7 +13,7 @@
 * [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/)
 
 ### Getting Started
-1. Download [Trig Cake.py](Trig Cake.py)
+1. Download [Trig Cake.py](Trig%20Cake.py)
 2. Place your bot's access token in a `.txt` file and change the reference on line 12 to reflect the file's location.
 3. Run.
 
