@@ -101,6 +101,7 @@ async def background_loop():
             with open("/home/pi/Desktop/soupjson.json", "w") as file:
                 json.dump(newdict, file)
             csgo.store()
+            await client.send_message(discord.Object(id="328295970246754304"), csgo.message)
         # print("looped")
 
         await asyncio.sleep(60*10)
