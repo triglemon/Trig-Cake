@@ -6,6 +6,7 @@ import asyncio
 from bs4 import BeautifulSoup as Soup
 import urllib.request
 import json
+import datetime as dt
 
 # Creating Discord Client and grabbing token
 client = discord.Client()
@@ -41,6 +42,11 @@ class Game:
     def store(self):
         self.last = self.found.text
 
+    def log(self):
+        with open("/home/pi/Desktop/log.txt", "a") as log:
+            log.write(self.name + ", " + dt.datetime.now())
+            log.close()
+
 
 # This event happens at launch and is the main loop of the script
 @client.event
@@ -69,8 +75,8 @@ async def background_loop():
         # Message triggers (If the last update online matches the last stored update)
 
         # Overwatch message trigger
-
         if ow.found.text != ow.last:
+            ow.log()
             headers = ow.found("h2")
             ow.message = "Overwatch:"
             for x in headers:
@@ -86,6 +92,7 @@ async def background_loop():
 
         # Fortnite message trigger
         if fn.found.text != fn.last:
+            fn.log()
             fn.message = fn.found.text
             fn.message = "Fortnite: " + fn.message + "\n<https://www.youtube.com/user/epicfortnite/videos>"
             # Writing File
@@ -96,7 +103,9 @@ async def background_loop():
             await client.send_message(discord.Object(id="328295970246754304"), fn.message)
 
         if csgo.found.text != csgo.last:
+            csgo.log()
             csgo.message = "CSGO: " + csgo.found.find("h2").text
+            csgo.message += "\nhttp://blog.counter-strike.net/index.php/category/updates/"
             newdict = {"overwatchlast": ow.found.text, "fortnitelast": fn.found.text, "csgolast": csgo.found.text}
             with open("/home/pi/Desktop/soupjson.json", "w") as file:
                 json.dump(newdict, file)
@@ -104,7 +113,8 @@ async def background_loop():
             await client.send_message(discord.Object(id="328295970246754304"), csgo.message)
         # print("looped")
 
-        await asyncio.sleep(60*10)
+        await asyncio.sleep(60 * 10)
+
 
 client.loop.create_task(background_loop())
 client.run(token)
