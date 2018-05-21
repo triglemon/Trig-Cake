@@ -44,7 +44,7 @@ class Game:
 
     def log(self):
         with open("/home/pi/Desktop/log.txt", "a") as log:
-            log.write(self.name + ", " + dt.datetime.now())
+            log.write(self.name + ", " + str(dt.datetime.now()) + "\n")
             log.close()
 
 
