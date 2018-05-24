@@ -6,13 +6,11 @@ import asyncio
 from bs4 import BeautifulSoup as Soup
 import urllib.request
 import json
-import datetime as dt
 
 
 # Creating Discord Client and grabbing token
 client = discord.Client()
 token = open('token').read()
-
 
 
 class SteamApp:
@@ -23,7 +21,7 @@ class SteamApp:
         with urllib.request.urlopen(url) as doc:
             storepage = doc.read()
         storesoup = Soup(storepage, 'html.parser')
-        self.name = storesoup.find('div', class_='apphub_AppName').text
+        self.name = storesoup.find('div', {'class': 'apphub_AppName'}).text
         self.id = url.split('/')[4]
         self.nurl = 'https://store.steampowered.com/news/?appids=' + self.id
         self.last = None
@@ -68,14 +66,31 @@ The following commands are available at your perusal (minus brackets):
     if message.content.startswith('!add'):
         id = message.channel.id
         url = message.content.replace('!add ', "")
+        prefix = 'https://store.steampowered.com/app/'
         print(url)
-        with open('steam.json', 'w+') as file:
-            dict = json.load(file)
-        if id in dict:
-            dict.update
+        if prefix not in url:
+            await client.send_message(message.channel, "Not a valid url.")
+        else:
+            with urllib.request.urlopen(url) as doc:
+                storepage = doc.read()
+            storesoup = Soup(storepage, 'html.parser')
+            metatag = storesoup.find('meta', {'property': 'og:url'})
+            urlcheck = metatag['content']
+            if urlcheck == 'https://store.steampowered.com/':
+                await client.send_message(message.channel, "Game does not exist")
+            else:
+                with open('steam.json', 'w+') as file:
+                    dict = json.load(file)
+                if url not in dict:
+                    dict[url] = []
+                if id in dict[url]:
+                    await client.send_message(message.channel, "Channel already subscribed to game.")
+                else:
+                    dict[url].append(id)
+                    gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
+                    await client.send_message(message.channel, "Channel is now subscribed to " + gamename + "!")
 
-
-        await client.send_message(message.channel, 'Added')
+        await client.send_message(message.channel, "Added")
 
 
 
