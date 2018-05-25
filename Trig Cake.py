@@ -28,10 +28,10 @@ class SteamApp:
         self.news = None
         self.found = None
 
-    def fetchjson(self, channelid):
-        with open('steam.json') as file:
-            steamdict = json.load(file)
-        self.last = (steamdict[channelid])
+    def fetchjson(self):
+        with open('updates.json') as updates:
+            updatesdict = json.load(updates)
+        self.last = (updatesdict[self.name])
 
     def parse(self):
         with urllib.request.urlopen(self.nurl) as doc:
@@ -42,7 +42,6 @@ class SteamApp:
 
     def trigger(self):
         pass
-
 
 
 @client.event
@@ -79,19 +78,23 @@ The following commands are available at your perusal (minus brackets):
             if urlcheck == 'https://store.steampowered.com/':
                 await client.send_message(message.channel, "Game does not exist")
             else:
-                with open('steam.json', 'w+') as file:
-                    dict = json.load(file)
-                if url not in dict:
-                    dict[url] = []
-                if id in dict[url]:
-                    await client.send_message(message.channel, "Channel already subscribed to game.")
-                else:
-                    dict[url].append(id)
-                    gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
-                    await client.send_message(message.channel, "Channel is now subscribed to " + gamename + "!")
-
-        await client.send_message(message.channel, "Added")
-
-
+                with open('steam.json', 'w+') as steam:
+                    steamdict = json.load(steam)
+                    if url not in steamdict:
+                        steamdict[url] = []
+                        json.dump(steamdict, steam)
+                        newgame = SteamApp(url)
+                        newgame.parse()
+                        with open('updates.json', 'a') as updates:
+                            updatesdict = json.load(updates)
+                            updatesdict[newgame.name] = newgame.last
+                            json.dump(updatesdict, updates)
+                    if id in steamdict[url]:
+                        await client.send_message(message.channel, "Channel already subscribed to game.")
+                    else:
+                        steamdict[url].append(id)
+                        json.dump(steamdict, steam)
+                        gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
+                        await client.send_message(message.channel, "Channel is now subscribed to " + gamename + "!")
 
 client.run(token)
