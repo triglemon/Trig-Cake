@@ -2,23 +2,11 @@
 ![Trig-Cake](Logo.png)
 
 ## Introduction
-**Trig-Cake** is a script written in python to notify you of updates to popular video games such as Fortnite & Overwatch.
+**Trig-Cake** is a bot written in python that subscribe your discord server channels to announcements from steam games.
 
-## Installation
-### Requisites
-* Python 3.x
-  * [urllib.request](https://docs.python.org/3/library/urllib.request.html)
-  * [asyncio](https://docs.python.org/3/library/asyncio.html)
-* [discord.py](https://github.com/Rapptz/discord.py)
-* [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/)
-
-### Getting Started
-1. Download [Trig Cake.py](Trig%20Cake.py)
-2. Place your bot's access token in a `.txt` file and change the reference on line 12 to reflect the file's location.
-3. Run.
-
-### Notes:
-Depending on your hardware (we're using a Raspberry Pi 1), you may want to use a scheduler such as crontab to automate hardware restarts and/or script restarts. 
+## Getting Started
+* Click [here](https://discordapp.com/oauth2/authorize?client_id=438429063879720960&permissions=84992&scope=bot) to add Trig Cake to a channel you manage.
+* Once Trig Cake has joined, type !cake in the channel to recieve a list of commands.
 
 ## Support/Issues
 List of [known issues](https://github.com/triglemon/Trig-Cake/issues), which includes things to be fixed or have yet to be implemented.
