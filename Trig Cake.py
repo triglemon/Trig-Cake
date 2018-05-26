@@ -33,7 +33,7 @@ class SteamApp:
     def fetchjson(self):
         with open('updates.json') as updates:
             updatesdict = json.load(updates)
-        self.last = (updatesdict[self.name])
+        self.last = (updatesdict[self.url])
 
     def parse(self):
         with requests.get(self.nurl, cookies=age) as doc:
@@ -52,7 +52,7 @@ class SteamApp:
             self.message = line1 + line2 + line3
             with open('updates.json') as updates:
                 updatesdict = json.load(updates)
-            updatesdict[self.name] = self.found
+            updatesdict[self.url] = self.found
             with open('updates.json', 'w') as newupdates:
                 json.dump(updatesdict, newupdates)
             with open('steam.json') as steam:
@@ -67,12 +67,12 @@ async def on_message(message):
     if message.content.startswith('!cake'):
         info = """**I'm tasked with checking Steam games for announcements.**
 The following commands are available at your perusal (minus brackets):
-**!add <url of store page>** — Subscribes channel to a game
-**!remove <url of store page>** — Unsubscribes channel to a game"""
+**!add <url of store page>** — Subscribes channel to a game.
+**!remove <url of store page>** — Unsubscribes channel to a game."""
         await client.send_message(message.channel, info)
 
     if message.content.startswith('!add'):
-        id = message.channel.id
+        channelid = message.channel.id
         url = message.content.replace('!add ', "")
         prefix = 'https://store.steampowered.com/app/'
 
@@ -87,33 +87,57 @@ The following commands are available at your perusal (minus brackets):
             urlcheck = metatag['content']
 
             if urlcheck == 'https://store.steampowered.com/':
-                await client.send_message(message.channel, "Game does not exist")
+                await client.send_message(message.channel, "Game does not exist.")
 
             else:
                 with open('steam.json') as steam:
                     steamdict = json.load(steam)
 
-                    if url not in steamdict:
-                        steamdict[url] = []
-                        with open('steam.json', 'w') as newsteam:
-                            json.dump(steamdict, newsteam)
-                        newgame = SteamApp(url)
-                        newgame.parse()
-                        with open('updates.json') as updates:
-                            updatesdict = json.load(updates)
-                            updatesdict[newgame.name] = newgame.found
-                        with open('updates.json', 'w') as newupdates:
-                            json.dump(updatesdict, newupdates)
+                if url not in steamdict:
+                    steamdict[url] = []
+                    with open('steam.json', 'w') as newsteam:
+                        json.dump(steamdict, newsteam)
+                    newgame = SteamApp(url)
+                    newgame.parse()
+                    with open('updates.json') as updates:
+                        updatesdict = json.load(updates)
+                    updatesdict[newgame.url] = newgame.found
+                    with open('updates.json', 'w') as newupdates:
+                        json.dump(updatesdict, newupdates)
 
-                    if id in steamdict[url]:
-                        await client.send_message(message.channel, "Channel already subscribed to game.")
+                if channelid in steamdict[url]:
+                    await client.send_message(message.channel, "Channel is already subscribed to game.")
 
-                    else:
-                        steamdict[url].append(id)
-                        with open('steam.json', 'w') as newsteam:
-                            json.dump(steamdict, newsteam)
-                        gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
-                        await client.send_message(message.channel, "Channel is now subscribed to " + gamename + "!")
+                else:
+                    steamdict[url].append(channelid)
+                    with open('steam.json', 'w') as newsteam:
+                        json.dump(steamdict, newsteam)
+                    gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
+                    await client.send_message(message.channel, "Channel is now subscribed to " + gamename + "!")
+
+    if message.content.startswith('!remove'):
+        url = message.content.replace('!remove ', "")
+        channelid = message.channel.id
+        with open('steam.json') as steam:
+            steamdict = json.load(steam)
+        if url in steamdict:
+            if channelid in steamdict[url]:
+                steamdict[url].remove(channelid)
+                if len(steamdict[url]) == 0:
+                    del steamdict[url]
+                    with open('updates.json') as updates:
+                        updatesdict = json.load(updates)
+                    del updatesdict[url]
+                    with open('updates.json', 'w') as newupdates:
+                        json.dump(updatesdict, newupdates)
+                with open('steam.json', 'w') as newsteam:
+                    json.dump(steamdict, newsteam)
+
+                await client.send_message(message.channel, "Channel is now unsubscribed from that game.")
+            else:
+                await client.send_message(message.channel, "Channel is not subscribed to that game.")
+        else:
+            await client.send_message(message.channel, "Channel is not subscribed to that game.")
 
 
 @client.event
