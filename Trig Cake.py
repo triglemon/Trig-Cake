@@ -65,11 +65,13 @@ class SteamApp:
 async def on_message(message):
 
     if message.content.startswith('!cake'):
-        info = """**I'm tasked with checking Steam games for announcements.**
+        typocheck = message.content.replace("!cake", "")
+        if len(typocheck) == 0:
+            info = """**I'm tasked with checking Steam games for announcements.**
 The following commands are available at your perusal (minus brackets):
 **!add <url of store page>** — Subscribes channel to a game.
-**!remove <url of store page>** — Unsubscribes channel to a game."""
-        await client.send_message(message.channel, info)
+**!unsub <url of store page>** — Unsubscribes channel to a game."""
+            await client.send_message(message.channel, info)
 
     if message.content.startswith('!add'):
         channelid = message.channel.id
@@ -115,8 +117,8 @@ The following commands are available at your perusal (minus brackets):
                     gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
                     await client.send_message(message.channel, "Channel is now subscribed to " + gamename + "!")
 
-    if message.content.startswith('!remove'):
-        url = message.content.replace('!remove ', "")
+    if message.content.startswith('!unsub'):
+        url = message.content.replace('!unsub ', "")
         channelid = message.channel.id
         with open('steam.json') as steam:
             steamdict = json.load(steam)
