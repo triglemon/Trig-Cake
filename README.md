@@ -5,7 +5,7 @@
 **Trig-Cake** is a bot written in python that subscribe your discord server channels to announcements from steam games.
 
 ## Getting Started
-* Click [here](https://discordapp.com/oauth2/authorize?client_id=438429063879720960&permissions=0&scope=bot) to add Trig Cake to a channel you manage.
+* Click [here](https://discordapp.com/oauth2/authorize?client_id=438429063879720960&permissions=84992&scope=bot) to add Trig Cake to a channel you manage.
 * Once Trig Cake has joined, type !cake in the channel to recieve a list of commands.
 
 ## Support/Issues
