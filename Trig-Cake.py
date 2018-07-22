@@ -4,7 +4,7 @@
 import discord
 import asyncio
 from bs4 import BeautifulSoup as Soup
-import requests
+import aiohttp
 import json
 
 
@@ -14,30 +14,43 @@ token = open('/home/pi/Desktop/token').read()
 age = {'birthtime': '283993201', 'mature_content': '1'}
 
 
+async def tryget(url, c):
+    async with aiohttp.ClientSession(cookies=c) as cs:
+        async with cs.get(url) as doc:
+            while True:
+                if doc.status == 200:
+                    break
+                await asyncio.sleep(5)
+            return await doc.text()
+
+
 class SteamApp:
 
-    # Each game is represented by a Game object
+    # Each game is represented by a SteamApp object
     def __init__(self, url):
         self.url = url
-        with requests.get(url, cookies=age) as doc:
-            storepage = doc.content
-        storesoup = Soup(storepage, 'html.parser')
-        self.name = storesoup.find('div', {'class': 'apphub_AppName'}).text
-        self.id = url.split('/')[4]
-        self.nurl = 'https://store.steampowered.com/news/?appids=' + self.id
+        self.name = None
+        self.id = None
+        self.nurl = None
         self.last = None
         self.news = []
         self.found = None
         self.message = None
+
+    async def acquire(self):
+        storepage = await tryget(self.url, age)
+        storesoup = Soup(storepage, 'html.parser')
+        self.name = storesoup.find('div', {'class': 'apphub_AppName'}).text
+        self.id = self.url.split('/')[4]
+        self.nurl = 'https://store.steampowered.com/news/?appids=' + self.id
 
     def fetchjson(self):
         with open('/home/pi/Desktop/Trig-Cake/updates.json') as updates:
             updatesdict = json.load(updates)
         self.last = (updatesdict[self.url])
 
-    def parse(self):
-        with requests.get(self.nurl, cookies=age) as doc:
-            newspage = doc.content
+    async def parse(self):
+        newspage = await tryget(self.nurl, age)
         newssoup = Soup(newspage, 'html.parser')
         for block in newssoup('div', {'class': 'newsPostBlock'}):
             if 'newsPostBlock' in block['class']:
@@ -83,8 +96,7 @@ The following commands are available for users with Administrator perms (minus b
                 await client.send_message(message.channel, "Not a valid url.")
 
             else:
-                with requests.get(url, cookies=age) as doc:
-                    storepage = doc.content
+                storepage = await tryget(url, age)
                 storesoup = Soup(storepage, 'html.parser')
                 metatag = storesoup.find('meta', {'property': 'og:url'})
                 urlcheck = metatag['content']
@@ -144,7 +156,6 @@ The following commands are available for users with Administrator perms (minus b
                 await client.send_message(message.channel, "Channel is not subscribed to that game.")
 
 
-@client.event
 async def background_loop():
     await client.wait_until_ready()
     print('Logged in as')
@@ -164,6 +175,7 @@ async def background_loop():
             splices = url.split('/')
             appid = splices[3] + splices[4]
             vars()[appid] = SteamApp(url)
+            await vars()[appid].acquire()
             vars()[appid].parse()
             vars()[appid].fetchjson()
             await vars()[appid].trigger()
