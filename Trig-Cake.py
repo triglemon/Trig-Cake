@@ -113,7 +113,8 @@ The following commands are available for users with Administrator perms (minus b
                         with open('/home/pi/Desktop/Trig-Cake/steam.json', 'w') as newsteam:
                             json.dump(steamdict, newsteam)
                         newgame = SteamApp(url)
-                        newgame.parse()
+                        await newgame.acquire()
+                        await newgame.parse()
                         with open('/home/pi/Desktop/Trig-Cake/updates.json') as updates:
                             updatesdict = json.load(updates)
                         updatesdict[newgame.url] = newgame.found
@@ -176,7 +177,7 @@ async def background_loop():
             appid = splices[3] + splices[4]
             vars()[appid] = SteamApp(url)
             await vars()[appid].acquire()
-            vars()[appid].parse()
+            await vars()[appid].parse()
             vars()[appid].fetchjson()
             await vars()[appid].trigger()
 
