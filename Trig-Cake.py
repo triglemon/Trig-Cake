@@ -19,17 +19,17 @@ logger.addHandler(handler)
 # Creating Discord Client and grabbing token
 token = open('/home/pi/Desktop/token').read()
 age = {'birthtime': '283993201', 'mature_content': '1'}
+aiosess = aiohttp.ClientSession(cookies=age)
 client = commands.Bot(command_prefix='!cake', description="Type !cakeask in chat for a list of commands and more info.")
 
 
-async def tryget(url, c):
-    async with aiohttp.ClientSession(cookies=c) as cs:
-        async with cs.get(url) as doc:
-            while True:
-                if doc.status == 200:
-                    break
-                await asyncio.sleep(5)
-            return await doc.text()
+async def tryget(url, session):
+    async with session.get(url) as doc:
+        while True:
+            if doc.status == 200:
+                break
+            await asyncio.sleep(5)
+        return await doc.text()
 
 
 class SteamApp:
@@ -46,7 +46,7 @@ class SteamApp:
         self.message = None
 
     async def acquire(self):
-        storepage = await tryget(self.url, age)
+        storepage = await tryget(self.url, aiosess)
         storesoup = Soup(storepage, 'html.parser')
         self.name = storesoup.find('div', {'class': 'apphub_AppName'}).text
         self.id = self.url.split('/')[4]
@@ -58,7 +58,7 @@ class SteamApp:
         self.last = (updatesdict[self.url])
 
     async def parse(self):
-        newspage = await tryget(self.nurl, age)
+        newspage = await tryget(self.nurl, aiosess)
         newssoup = Soup(newspage, 'html.parser')
         for block in newssoup('div', {'class': 'newsPostBlock'}):
             if 'newsPostBlock' in block['class']:
@@ -88,7 +88,7 @@ async def ask():
 The following commands are available for users with Administrator perms (minus brackets):
 **!cakesub <url of store page>** — Subscribes channel to a game.
 **!cakeunsub <url of store page>** — Unsubscribes channel to a game.
-**!cakesubbed** — Prints list of games the channel is subscribed to"""
+**!cakesubbed** — Prints list of games the channel is subscribed to."""
     await client.say(info)
 
 
@@ -101,7 +101,7 @@ async def sub(ctx, link):
         if prefix not in url:
             await client.send_message(ctx.message.channel, "Not a valid url.")
         else:
-            storepage = await tryget(url, age)
+            storepage = await tryget(url, aiosess)
             storesoup = Soup(storepage, 'html.parser')
             metatag = storesoup.find('meta', {'property': 'og:url'})
             urlcheck = metatag['content']
@@ -173,13 +173,12 @@ async def subbed(ctx):
     else:
         message = "This channel is subbed to:  "
         for url in subbedlist:
-            storepage = await tryget(url, age)
+            storepage = await tryget(url, aiosess)
             storesoup = Soup(storepage, 'html.parser')
             gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
             message += (gamename + ',  ')
         message = message[:-3] + '.'
         await client.send_message(ctx.message.channel, message)
-
 
 
 async def background_loop():
@@ -189,15 +188,10 @@ async def background_loop():
     print(client.user.id)
     print('------')
 
-    currentgames = []
-
     while not client.is_closed:
         with open('/home/pi/Desktop/Trig-Cake/steam.json') as steam:
             steamdict = json.load(steam)
-        for keys in steamdict.keys():
-            if keys not in currentgames:
-                currentgames.append(keys)
-        for url in currentgames:
+        for url in steamdict:
             splices = url.split('/')
             appid = splices[3] + splices[4]
             vars()[appid] = SteamApp(url)
