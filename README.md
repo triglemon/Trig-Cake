@@ -6,7 +6,7 @@
 
 ## Getting Started
 * Click [here](https://discordapp.com/oauth2/authorize?client_id=438429063879720960&permissions=84992&scope=bot) to add Trig Cake to a channel you manage.
-* Once Trig Cake has joined, type !cake in the channel to recieve a list of commands.
+* Once Trig Cake has joined, type !cakeask in the channel to recieve a list of commands.
 
 ## Support/Issues
 List of [known issues](https://github.com/triglemon/Trig-Cake/issues), which includes things to be fixed or have yet to be implemented.
