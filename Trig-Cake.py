@@ -12,7 +12,7 @@ import logging
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler = logging.FileHandler(filename='/home/pi/Desktop/discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
@@ -87,7 +87,8 @@ async def ask():
     info = """**I'm tasked with checking Steam games for announcements.**
 The following commands are available for users with Administrator perms (minus brackets):
 **!cakesub <url of store page>** — Subscribes channel to a game.
-**!cakeunsub <url of store page>** — Unsubscribes channel to a game."""
+**!cakeunsub <url of store page>** — Unsubscribes channel to a game.
+**!cakesubbed** — Prints list of games the channel is subscribed to"""
     await client.say(info)
 
 
@@ -156,6 +157,29 @@ async def unsub(ctx, link):
                 await client.send_message(ctx.message.channel, "Channel is not subscribed to that game.")
         else:
             await client.send_message(ctx.message.channel, "Channel is not subscribed to that game.")
+
+
+@client.command(pass_context=True)
+async def subbed(ctx):
+    channelid = ctx.message.channel.id
+    subbedlist = []
+    with open('/home/pi/Desktop/Trig-Cake/steam.json') as steam:
+        steamdict = json.load(steam)
+    for url in steamdict:
+        if channelid in steamdict[url]:
+            subbedlist.append(url)
+    if len(subbedlist) == 0:
+        await client.send_message(ctx.message.channel, "Channel is not subscribed to any games.")
+    else:
+        message = "This channel is subbed to:  "
+        for url in subbedlist:
+            storepage = await tryget(url, age)
+            storesoup = Soup(storepage, 'html.parser')
+            gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
+            message += (gamename + ',  ')
+        message = message[:-3] + '.'
+        await client.send_message(ctx.message.channel, message)
+
 
 
 async def background_loop():
