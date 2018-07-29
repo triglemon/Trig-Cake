@@ -204,8 +204,8 @@ async def last(ctx, url):
 @client.command(pass_context=True)
 async def found(ctx, url):
     stm = SteamApp(url)
-    stm.acquire()
-    stm.parse()
+    await stm.acquire()
+    await stm.parse()
     await client.send_message(ctx.message.channel, stm.found)
 
 
