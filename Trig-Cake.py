@@ -16,8 +16,6 @@ handler = logging.FileHandler(filename='/home/pi/Desktop/discord.log', encoding=
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-# Creating Discord Client and grabbing token
-token = open('/home/pi/Desktop/token').read()
 age = {'birthtime': '283993201', 'mature_content': '1'}
 aiosess = aiohttp.ClientSession(cookies=age)
 client = commands.Bot(command_prefix='!cake', description="Type !cakeask in chat for a list of commands and more info.")
@@ -38,39 +36,36 @@ class SteamApp:
     def __init__(self, url):
         self.url = url
         self.name = None
-        self.id = None
         self.nurl = None
         self.last = None
-        self.news = []
+        self.news = None
         self.found = None
-        self.message = None
-
-    async def acquire(self):
-        storepage = await tryget(self.url, aiosess)
-        storesoup = Soup(storepage, 'html.parser')
-        self.name = storesoup.find('div', {'class': 'apphub_AppName'}).text
-        self.id = self.url.split('/')[4]
-        self.nurl = 'https://store.steampowered.com/news/?appids=' + self.id
+        self.soup = None
 
     def fetchjson(self):
         with open('/home/pi/Desktop/Trig-Cake/updates.json') as updates:
             updatesdict = json.load(updates)
         self.last = (updatesdict[self.url])
 
+    async def acquire(self):
+        storepage = await tryget(self.url, aiosess)
+        self.soup = Soup(storepage, 'html.parser')
+        self.name = self.soup.find('div', {'class': 'apphub_AppName'}).text
+        gameid = self.url.split('/')[4]
+        self.nurl = 'https://store.steampowered.com/news/?appids=' + gameid
+
     async def parse(self):
         newspage = await tryget(self.nurl, aiosess)
         newssoup = Soup(newspage, 'html.parser')
-        for block in newssoup('div', {'class': 'newsPostBlock'}):
-            if 'newsPostBlock' in block['class']:
-                self.news.append(block)
-        self.found = self.news[0].find('a').text
+        news = newssoup.find('div', {'class': 'newsPostBlock'})
+        self.found = news.find('a').text
 
     async def trigger(self):
         if self.found != self.last:
             line1 = "**New announcement from " + self.name + ":**\n"
             line2 = "'" + self.found + "'" + "\n"
             line3 = "<" + self.nurl + ">"
-            self.message = line1 + line2 + line3
+            message = line1 + line2 + line3
             with open('/home/pi/Desktop/Trig-Cake/updates.json') as updates:
                 updatesdict = json.load(updates)
             updatesdict[self.url] = self.found
@@ -79,7 +74,27 @@ class SteamApp:
             with open('/home/pi/Desktop/Trig-Cake/steam.json') as steam:
                 steamdict = json.load(steam)
             for channel in steamdict[self.url]:
-                await client.send_message(discord.Object(id=channel), self.message)
+                await client.send_message(discord.Object(id=channel), message)
+
+    async def saletrigger(self):
+        with open('/home/pi/Desktop/Trig-Cake/sale.json') as sale:
+            saledict = json.load(sale)
+        tagline = self.soup.find('title').text
+        check = self.name + ' on Steam'
+        if saledict[self.url] == 'False' and len(tagline.replace(check, '')) != 0:
+            splices = tagline.split(' ')
+            message = self.name + " is on sale for " + splices[1] + "! :fire: :moneybag:"
+            saledict[self.url] = 'True'
+            with open('/home/pi/Desktop/Trig-Cake/sale.json', 'w') as newsale:
+                json.dump(saledict, newsale)
+            with open('/home/pi/Desktop/Trig-Cake/steam.json') as steam:
+                steamdict = json.load(steam)
+            for channel in steamdict[self.url]:
+                await client.send_message(discord.Object(id=channel), message)
+        if saledict[self.url] == 'True' and len(tagline.replace(check, '')) == 0:
+            saledict[self.url] = 'False'
+            with open('/home/pi/Desktop/Trig-Cake/sale.json', 'w') as newsale:
+                json.dump(saledict, newsale)
 
 
 @client.command()
@@ -162,12 +177,9 @@ async def unsub(ctx, link):
 @client.command(pass_context=True)
 async def subbed(ctx):
     channelid = ctx.message.channel.id
-    subbedlist = []
     with open('/home/pi/Desktop/Trig-Cake/steam.json') as steam:
         steamdict = json.load(steam)
-    for url in steamdict:
-        if channelid in steamdict[url]:
-            subbedlist.append(url)
+    subbedlist = [url for url in steamdict if channelid in steamdict[url]]
     if len(subbedlist) == 0:
         await client.send_message(ctx.message.channel, "Channel is not subscribed to any games.")
     else:
@@ -179,6 +191,22 @@ async def subbed(ctx):
             message += (gamename + ',  ')
         message = message[:-3] + '.'
         await client.send_message(ctx.message.channel, message)
+
+
+# Debug stuff
+@client.command(pass_context=True)
+async def last(ctx, url):
+    stm = SteamApp(url)
+    stm.fetchjson()
+    await client.send_message(ctx.message.channel, stm.last)
+
+
+@client.command(pass_context=True)
+async def found(ctx, url):
+    stm = SteamApp(url)
+    stm.acquire()
+    stm.parse()
+    await client.send_message(ctx.message.channel, stm.found)
 
 
 async def background_loop():
@@ -199,10 +227,13 @@ async def background_loop():
             await vars()[appid].parse()
             vars()[appid].fetchjson()
             await vars()[appid].trigger()
+            await vars()[appid].saletrigger()
 
         print("looped")
         await asyncio.sleep(60*5)
 
 
 client.loop.create_task(background_loop())
+with open('/home/pi/Desktop/token') as file:
+    token = file.read()
 client.run(token)
