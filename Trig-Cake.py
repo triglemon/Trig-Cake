@@ -62,10 +62,9 @@ class SteamApp:
 
     async def trigger(self):
         if self.found != self.last:
-            line1 = "**New announcement from " + self.name + ":**\n"
-            line2 = "'" + self.found + "'" + "\n"
-            line3 = "<" + self.nurl + ">"
-            message = line1 + line2 + line3
+            message = f"""**New announcement from {self.name}:**
+'{self.found}'
+<{self.nurl}>"""
             with open('/home/pi/Desktop/Trig-Cake/updates.json') as updates:
                 updatesdict = json.load(updates)
             updatesdict[self.url] = self.found
@@ -83,7 +82,8 @@ class SteamApp:
         check = self.name + ' on Steam'
         if saledict[self.url] == 'False' and len(tagline.replace(check, '')) != 0:
             splices = tagline.split(' ')
-            message = self.name + " is on sale for " + splices[1] + "! :fire: :moneybag:"
+            message = f"""**{self.name} is one sale for {splices[1]} off!** :fire: :moneybag:
+<{self.url}>"""
             saledict[self.url] = 'True'
             with open('/home/pi/Desktop/Trig-Cake/sale.json', 'w') as newsale:
                 json.dump(saledict, newsale)
@@ -144,7 +144,7 @@ async def sub(ctx, link):
                     with open('/home/pi/Desktop/Trig-Cake/steam.json', 'w') as newsteam:
                         json.dump(steamdict, newsteam)
                     gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
-                    await client.send_message(ctx.message.channel, "Channel is now subscribed to " + gamename + "!")
+                    await client.send_message(ctx.message.channel, f"Channel is now subscribed to {gamename}!")
 
 
 @client.command(pass_context=True)
