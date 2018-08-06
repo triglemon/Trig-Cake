@@ -1,16 +1,8 @@
-#!/usr/bin/python3
-
-
-import discord
-import asyncio
-from bs4 import BeautifulSoup as Soup
-import aiohttp
-import json
 from discord.ext import commands
 import logging
 
 
-startup_extensions = ['ask', 'sub', 'unsub', 'subbed', 'last', 'found']
+startup_extensions = ['ask', 'sub', 'debug', 'backgroundloop']
 description = "Type !cakeask in chat for a list of commands and more info."
 client = commands.Bot(command_prefix='!cake', description=description, hidden=False)
 
@@ -56,3 +48,4 @@ if __name__ == "__main__":
     with open('token') as file:
         token = file.read()
     client.run(token)
+

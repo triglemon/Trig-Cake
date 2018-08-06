@@ -2,9 +2,16 @@ from discord.ext import commands
 from SteamApp import SteamApp
 
 
-class Last:
+class Debug:
     def __init__(self, client):
         self.client = client
+
+    @commands.command()
+    async def found(self, url):
+        stm = SteamApp(url, self.client)
+        await stm.acquire()
+        await stm.parse()
+        await self.client.say(stm.found)
 
     @commands.command()
     async def last(self, url):
@@ -14,4 +21,4 @@ class Last:
 
 
 def setup(client):
-    client.add_cog(Last(client))
+    client.add_cog(Debug(client))
