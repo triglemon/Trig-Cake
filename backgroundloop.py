@@ -1,4 +1,3 @@
-from discord.ext import commands
 from SteamApp import SteamApp
 import asyncio
 import json
@@ -7,7 +6,7 @@ import json
 class BackgroundLoop:
     def __init__(self, client):
         self.client = client
-        client.loop.create_task(backgroundloop())
+        self.client.loop.create_task(self.backgroundloop())
 
     async def backgroundloop(self):
         while not self.client.is_closed:
