@@ -18,8 +18,10 @@ class BackgroundLoop:
                 vars()[appid] = SteamApp(url, self.client)
                 await vars()[appid].acquire()
                 await vars()[appid].parse()
-                vars()[appid].fetchjson()
+                vars()[appid].fetchupdate()
                 await vars()[appid].trigger()
+                vars()[appid].fetchsale()
+                vars()[appid].gaben()
                 await vars()[appid].saletrigger()
 
             print("looped")

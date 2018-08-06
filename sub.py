@@ -14,8 +14,7 @@ class Sub:
         if ctx.message.author.server_permissions.administrator:
             channelid = ctx.message.channel.id
             url = link
-            prefix = 'https://store.steampowered.com/app/'
-            if prefix not in url:
+            if 'https://store.steampowered.com/app/' not in url:
                 await self.client.say("Not a valid url.")
             else:
                 storepage = await tryget(url)
@@ -34,11 +33,17 @@ class Sub:
                         newgame = SteamApp(url, self.client)
                         await newgame.acquire()
                         await newgame.parse()
-                        with open('updates.json') as updates:
-                            updatesdict = json.load(updates)
-                        updatesdict[newgame.url] = newgame.found
-                        with open('updates.json', 'w') as newupdates:
-                            json.dump(updatesdict, newupdates)
+                        newgame.gaben()
+                        with open('update.json') as update:
+                            updatedict = json.load(update)
+                        updatedict[newgame.url] = newgame.found
+                        with open('update.json', 'w') as newupdate:
+                            json.dump(updatedict, newupdate)
+                        with open('sale.json') as sale:
+                            saledict = json.load(sale)
+                        saledict[newgame.url] = newgame.foundsale
+                        with open('sale.json', 'w') as newsale:
+                            json.dump(saledict, newsale)
                     if channelid in steamdict[url]:
                         await self.client.say("Channel is already subscribed to game.")
                     else:
@@ -47,24 +52,6 @@ class Sub:
                             json.dump(steamdict, newsteam)
                         gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
                         await self.client.say(f"Channel is now subscribed to {gamename}!")
-
-    @commands.command(pass_context=True)
-    async def subbed(self, ctx):
-        channelid = ctx.message.channel.id
-        with open('steam.json') as steam:
-            steamdict = json.load(steam)
-        subbedlist = [url for url in steamdict if channelid in steamdict[url]]
-        if len(subbedlist) == 0:
-            await self.client.say("Channel is not subscribed to any games.")
-        else:
-            message = "This channel is subbed to:  "
-            for url in subbedlist:
-                storepage = await tryget(url)
-                storesoup = Soup(storepage, 'html.parser')
-                gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
-                message += (gamename + ',  ')
-            message = message[:-3] + '.'
-            await self.client.say(message)
 
     @commands.command(pass_context=True)
     async def unsub(self, ctx, link):
@@ -78,11 +65,16 @@ class Sub:
                     steamdict[url].remove(channelid)
                     if len(steamdict[url]) == 0:
                         del steamdict[url]
-                        with open('updates.json') as updates:
-                            updatesdict = json.load(updates)
-                        del updatesdict[url]
-                        with open('updates.json', 'w') as newupdates:
-                            json.dump(updatesdict, newupdates)
+                        with open('update.json') as update:
+                            updatedict = json.load(update)
+                        del updatedict[url]
+                        with open('update.json', 'w') as newupdate:
+                            json.dump(updatedict, newupdate)
+                        with open('sale.json') as sale:
+                            saledict = json.load(sale)
+                        del saledict[url]
+                        with open('sale.json', 'w') as newsale:
+                            json.dump(saledict, newsale)
                     with open('steam.json', 'w') as newsteam:
                         json.dump(steamdict, newsteam)
 
@@ -91,6 +83,37 @@ class Sub:
                     await self.client.say("Channel is not subscribed to that game.")
             else:
                 await self.client.say("Channel is not subscribed to that game.")
+
+    @commands.command(pass_context=True)
+    async def subbed(self, ctx):
+        channelid = ctx.message.channel.id
+        with open('steam.json') as steam:
+            steamdict = json.load(steam)
+        subbedlist = [url for url in steamdict if channelid in steamdict[url]]
+        if len(subbedlist) == 0:
+            await self.client.say("Channel is not subscribed to any games.")
+        else:
+            message = "This channel is subbed to:  "
+            for url in subbedlist:
+                stm = SteamApp(url, self.client)
+                await stm.acquire()
+                message += (stm.name + ',  ')
+            message = message[:-3] + '.'
+            await self.client.say(message)
+
+    @commands.command()
+    async def sale(self, link):
+        stm = SteamApp(link, self.client)
+        await stm.acquire()
+        stm.gaben()
+        if stm.foundsale:
+            message = f"""**{stm.name} is on sale for {stm.saleoff} off!** :fire: :moneybag:
+"{stm.saledesc}"
+<{stm.url}>"""
+            await self.client.say(message)
+        else:
+            message = f"Bah humbug, {stm.name} is not on sale right now! Better luck next time!"
+            await self.client.say(message)
 
 
 def setup(client):

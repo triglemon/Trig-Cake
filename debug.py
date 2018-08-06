@@ -16,7 +16,7 @@ class Debug:
     @commands.command()
     async def last(self, url):
         stm = SteamApp(url, self.client)
-        stm.fetchjson()
+        stm.fetchupdate()
         await self.client.say(stm.last)
 
 

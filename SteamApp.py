@@ -14,12 +14,30 @@ class SteamApp:
         self.news = None
         self.found = None
         self.soup = None
+        self.lastsale = None
+        self.foundsale = None
+        self.saleoff = None
+        self.saledesc = None
         self.client = client
 
-    def fetchjson(self):
-        with open('updates.json') as updates:
-            updatesdict = json.load(updates)
-        self.last = (updatesdict[self.url])
+    def fetchupdate(self):
+        with open('update.json') as update:
+            updatedict = json.load(update)
+        self.last = updatedict[self.url]
+
+    def fetchsale(self):
+        with open('sale.json') as sale:
+            saledict = json.load(sale)
+        self.lastsale = saledict[self.url]
+
+    def gaben(self):
+        tagline = self.soup.find('title').text
+        check = self.name + ' on Steam'
+        self.foundsale = len(tagline.replace(check, '')) != 0
+        if self.foundsale:
+            splices = tagline.split(' ')
+            self.saleoff = splices[1]
+            self.saledesc = self.soup.find('p', {'class': 'game_purchase_discount_countdown'})
 
     async def acquire(self):
         storepage = await tryget(self.url)
@@ -39,25 +57,23 @@ class SteamApp:
             message = f"""**New announcement from {self.name}:**
 '{self.found}'
 <{self.nurl}>"""
-            with open('updates.json') as updates:
-                updatesdict = json.load(updates)
-            updatesdict[self.url] = self.found
-            with open('updates.json', 'w') as newupdates:
-                json.dump(updatesdict, newupdates)
+            with open('update.json') as update:
+                updatedict = json.load(update)
+            updatedict[self.url] = self.found
+            with open('update.json', 'w') as newupdate:
+                json.dump(updatedict, newupdate)
             with open('steam.json') as steam:
                 steamdict = json.load(steam)
             for channel in steamdict[self.url]:
                 await self.client.send_message(discord.Object(id=channel), message)
 
     async def saletrigger(self):
-        with open('sale.json') as sale:
-            saledict = json.load(sale)
-        tagline = self.soup.find('title').text
-        check = self.name + ' on Steam'
-        if saledict[self.url] == 'False' and len(tagline.replace(check, '')) != 0:
-            splices = tagline.split(' ')
-            message = f"""**{self.name} is one sale for {splices[1]} off!** :fire: :moneybag:
+        if not self.lastsale and self.foundsale:
+            message = f"""**{self.name} is on sale for {self.saleoff} off!** :fire: :moneybag:
+"{self.saledesc}"
 <{self.url}>"""
+            with open('sale.json') as sale:
+                saledict = json.load(sale)
             saledict[self.url] = 'True'
             with open('sale.json', 'w') as newsale:
                 json.dump(saledict, newsale)
@@ -65,7 +81,9 @@ class SteamApp:
                 steamdict = json.load(steam)
             for channel in steamdict[self.url]:
                 await self.client.send_message(discord.Object(id=channel), message)
-        if saledict[self.url] == 'True' and len(tagline.replace(check, '')) == 0:
+        if self.lastsale and not self.foundsale:
+            with open('sale.json') as sale:
+                saledict = json.load(sale)
             saledict[self.url] = 'False'
             with open('sale.json', 'w') as newsale:
                 json.dump(saledict, newsale)
