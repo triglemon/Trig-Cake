@@ -1,5 +1,6 @@
 from discord.ext import commands
-from SteamApp import SteamApp
+from steamapp import SteamApp
+import discord
 
 
 class Debug:
@@ -11,13 +12,16 @@ class Debug:
         stm = SteamApp(url, self.client)
         await stm.acquire()
         await stm.parse()
-        await self.client.say(stm.found)
+        embed = discord.Embed(title=stm.name, description=stm.found)
+        await self.client.say(embed=embed)
 
     @commands.command()
     async def last(self, url):
         stm = SteamApp(url, self.client)
         stm.fetchupdate()
-        await self.client.say(stm.last)
+        await stm.acquire()
+        embed = discord.Embed(title=stm.name, description=stm.last)
+        await self.client.say(embed=embed)
 
 
 def setup(client):
