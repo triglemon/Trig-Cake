@@ -1,8 +1,9 @@
 from discord.ext import commands
 from tryget import tryget
-from SteamApp import SteamApp
+from steamapp import SteamApp
 import json
 from bs4 import BeautifulSoup as Soup
+import discord
 
 
 class Sub:
@@ -105,12 +106,14 @@ class Sub:
     async def sale(self, link):
         stm = SteamApp(link, self.client)
         await stm.acquire()
+        await stm.parse()
         stm.gaben()
         if stm.foundsale:
-            message = f"""**{stm.name} is on sale for {stm.saleoff} off!** :fire: :moneybag:
-"{stm.saledesc}"
-<{stm.url}>"""
-            await self.client.say(message)
+            embed = discord.Embed(title=stm.name, url=stm.url, description=stm.saledesc,
+                                  color=0xebbe23)
+            embed.set_footer(text="Github repo: https://github.com/triglemon/Trig-Cake")
+            embed.set_image(url=stm.thumbnail)
+            await self.client.say(embed=embed)
         else:
             message = f"Bah humbug, {stm.name} is not on sale right now! Better luck next time!"
             await self.client.say(message)
