@@ -16,14 +16,18 @@ class Sub:
             channelid = ctx.message.channel.id
             url = link
             if 'https://store.steampowered.com/app/' not in url:
-                await self.client.say("Not a valid url.")
+                embed = discord.Embed(title=url, description="Not a valid URL.",
+                                      color=0xebbe23)
+                await self.client.say(embed=embed)
             else:
                 storepage = await tryget(url)
                 storesoup = Soup(storepage, 'html.parser')
                 metatag = storesoup.find('meta', {'property': 'og:url'})
                 urlcheck = metatag['content']
                 if urlcheck == 'https://store.steampowered.com/':
-                    await self.client.say("Game does not exist.")
+                    embed = discord.Embed(title=url, description="Game does not exist.",
+                                          color=0xebbe23)
+                    await self.client.say(embed=embed)
                 else:
                     with open('steam.json') as steam:
                         steamdict = json.load(steam)
@@ -46,13 +50,17 @@ class Sub:
                         with open('sale.json', 'w') as newsale:
                             json.dump(saledict, newsale)
                     if channelid in steamdict[url]:
-                        await self.client.say("Channel is already subscribed to game.")
+                        embed = discord.Embed(title=url, description="Channel is already subscribed to game.",
+                                              color=0xebbe23)
+                        await self.client.say(embed=embed)
                     else:
                         steamdict[url].append(channelid)
                         with open('steam.json', 'w') as newsteam:
                             json.dump(steamdict, newsteam)
                         gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
-                        await self.client.say(f"Channel is now subscribed to {gamename}!")
+                        embed = discord.Embed(title=url, description=f"Channel is now subscribed to {gamename}!",
+                                              color=0xebbe23)
+                        await self.client.say(embed=embed)
 
     @commands.command(pass_context=True)
     async def unsub(self, ctx, link):
@@ -79,11 +87,17 @@ class Sub:
                     with open('steam.json', 'w') as newsteam:
                         json.dump(steamdict, newsteam)
 
-                        await self.client.say("Channel is now unsubscribed from that game.")
+                        embed = discord.Embed(title=url, description="Channel is now unsubscribed from that game.",
+                                              color=0xebbe23)
+                        await self.client.say(embed=embed)
                 else:
-                    await self.client.say("Channel is not subscribed to that game.")
+                    embed = discord.Embed(title=url, description="Channel is not subscribed to that game.",
+                                          color=0xebbe23)
+                    await self.client.say(embed=embed)
             else:
-                await self.client.say("Channel is not subscribed to that game.")
+                embed = discord.Embed(title=url, description="Channel is not subscribed to that game.",
+                                      color=0xebbe23)
+                await self.client.say(embed=embed)
 
     @commands.command(pass_context=True)
     async def subbed(self, ctx):
@@ -92,15 +106,20 @@ class Sub:
             steamdict = json.load(steam)
         subbedlist = [url for url in steamdict if channelid in steamdict[url]]
         if len(subbedlist) == 0:
-            await self.client.say("Channel is not subscribed to any games.")
+            embed = discord.Embed(title="!cakesubbed",
+                                  description="Channel is not subscribed to any games.",
+                                  color=0xebbe23)
+            await self.client.say(embed=embed)
         else:
-            message = "This channel is subbed to:  "
+            message = ''
             for url in subbedlist:
                 stm = SteamApp(url, self.client)
                 await stm.acquire()
-                message += (stm.name + ',  ')
+                message += (stm.name + ', ')
             message = message[:-3] + '.'
-            await self.client.say(message)
+            embed = discord.Embed(title="This channel is subbed to:", description=message,
+                                  color=0xebbe23)
+            await self.client.say(embed=embed)
 
     @commands.command()
     async def sale(self, link):
@@ -115,8 +134,9 @@ class Sub:
             embed.set_image(url=stm.thumbnail)
             await self.client.say(embed=embed)
         else:
-            message = f"Bah humbug, {stm.name} is not on sale right now! Better luck next time!"
-            await self.client.say(message)
+            embed = discord.Embed(title=f"{stm.name} is not on sale right now!", description="Better luck next time!",
+                                  color=0xebbe23)
+            await self.client.say(embed=embed)
 
 
 def setup(client):

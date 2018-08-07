@@ -61,7 +61,7 @@ class SteamApp:
     async def trigger(self):
         if self.found != self.last:
             embed = discord.Embed(title=self.found, url=self.newslink, description="New Steam announcement!",
-                                       color=0xebbe23)
+                                  color=0xebbe23)
             embed.set_author(name=self.postauthor)
             embed.set_footer(text="Github repo: https://github.com/triglemon/Trig-Cake")
             embed.set_image(url=self.thumbnail)

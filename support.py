@@ -10,9 +10,10 @@ class Support:
     @commands.command(pass_context=True)
     async def slice(self, ctx, anon):
         if anon == "anon":
-            message = "Thanks for sending the team a slice of cake, anonymous user! " \
-                      "This is a small act that lets them know their work does not go unappreciated."
-            await self.client.say(message)
+            embed = discord.Embed(title="Thanks for sending the team a slice of cake, anonymous user!",
+                                  description="This is a small act that shows us your appreciation.",
+                                  color=0xebbe23)
+            await self.client.say(embed=embed)
             with open('slice.json') as slice:
                 slicedict = json.load(slice)
             if 'anon' not in slicedict:
@@ -25,8 +26,10 @@ class Support:
                 slicedict['total'] += 1
             with open('slice.json', 'w') as newslice:
                 json.dump(slicedict, newslice)
-            teammessage = f"You got sent a slice from anon! Slices recieved: {str(slicedict['total'])}"
-            await self.client.send_message(discord.Object(id='466807163323416588'), teammessage)
+            sliceembed = discord.Embed(title="You got sent a slice from anon!",
+                                  description=f"Slices recieved: {str(slicedict['total'])}",
+                                  color=0xebbe23)
+            await self.client.send_message(discord.Object(id='466807163323416588'), embed=sliceembed)
         if anon == "me":
             with open('slice.json') as slice:
                 slicedict = json.load(slice)
@@ -35,17 +38,23 @@ class Support:
             if 'users' not in slicedict:
                 slicedict['users'] = []
             if userid in slicedict['users']:
-                await self.client.say("You already sent us a slice, but thanks for the support!")
+                embed = discord.Embed(title="You already sent us a slice...",
+                                      description=" ...but thanks for the support!",
+                                      color=0xebbe23)
+                await self.client.say(embed=embed)
             else:
-                message = f"Thanks for sending the team a slice of cake, {username}! " \
-                           "This is a small act that lets us know our work does not go unappreciated."
-                await self.client.say(message)
+                embed = discord.Embed(title=f"Thanks for sending the team a slice of cake, {username}!",
+                                      description="This is a small act that shows us your appreciation.",
+                                      color=0xebbe23)
+                await self.client.say(embed=embed)
                 slicedict['users'].append(userid)
                 slicedict['total'] += 1
                 with open('slice.json', 'w') as newslice:
                     json.dump(slicedict, newslice)
-                teammessage = f"You got sent a slice from {username}! Slices recieved: {str(slicedict['total'])}"
-                await self.client.send_message(discord.Object(id='466807163323416588'), teammessage)
+                sliceembed = discord.Embed(title=f"You got sent a slice from {username}!",
+                                      description=f"Slices recieved: {str(slicedict['total'])}",
+                                      color=0xebbe23)
+                await self.client.send_message(discord.Object(id='466807163323416588'), embed=sliceembed)
 
 
 def setup(client):
