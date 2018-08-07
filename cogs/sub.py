@@ -1,6 +1,6 @@
 from discord.ext import commands
-from tryget import tryget
-from steamapp import SteamApp
+from modules.tryget import tryget
+from modules.steamapp import SteamApp
 import json
 from bs4 import BeautifulSoup as Soup
 import discord
@@ -29,25 +29,25 @@ class Sub:
                                           color=0xebbe23)
                     await self.client.say(embed=embed)
                 else:
-                    with open('steam.json') as steam:
+                    with open('json/steam.json') as steam:
                         steamdict = json.load(steam)
                     if url not in steamdict:
                         steamdict[url] = []
-                        with open('steam.json', 'w') as newsteam:
+                        with open('json/steam.json', 'w') as newsteam:
                             json.dump(steamdict, newsteam)
                         newgame = SteamApp(url, self.client)
                         await newgame.acquire()
                         await newgame.parse()
                         newgame.gaben()
-                        with open('update.json') as update:
+                        with open('json/update.json') as update:
                             updatedict = json.load(update)
                         updatedict[newgame.url] = newgame.found
-                        with open('update.json', 'w') as newupdate:
+                        with open('json/update.json', 'w') as newupdate:
                             json.dump(updatedict, newupdate)
-                        with open('sale.json') as sale:
+                        with open('json/sale.json') as sale:
                             saledict = json.load(sale)
                         saledict[newgame.url] = newgame.foundsale
-                        with open('sale.json', 'w') as newsale:
+                        with open('json/sale.json', 'w') as newsale:
                             json.dump(saledict, newsale)
                     if channelid in steamdict[url]:
                         embed = discord.Embed(title=url, description="Channel is already subscribed to game.",
@@ -55,7 +55,7 @@ class Sub:
                         await self.client.say(embed=embed)
                     else:
                         steamdict[url].append(channelid)
-                        with open('steam.json', 'w') as newsteam:
+                        with open('json/steam.json', 'w') as newsteam:
                             json.dump(steamdict, newsteam)
                         gamename = storesoup.find('div', {'class': 'apphub_AppName'}).text
                         embed = discord.Embed(title=url, description=f"Channel is now subscribed to {gamename}!",
@@ -67,24 +67,24 @@ class Sub:
         if ctx.message.author.server_permissions.administrator:
             url = link
             channelid = ctx.message.channel.id
-            with open('steam.json') as steam:
+            with open('json/steam.json') as steam:
                 steamdict = json.load(steam)
             if url in steamdict:
                 if channelid in steamdict[url]:
                     steamdict[url].remove(channelid)
                     if len(steamdict[url]) == 0:
                         del steamdict[url]
-                        with open('update.json') as update:
+                        with open('json/update.json') as update:
                             updatedict = json.load(update)
                         del updatedict[url]
-                        with open('update.json', 'w') as newupdate:
+                        with open('json/update.json', 'w') as newupdate:
                             json.dump(updatedict, newupdate)
-                        with open('sale.json') as sale:
+                        with open('json/sale.json') as sale:
                             saledict = json.load(sale)
                         del saledict[url]
-                        with open('sale.json', 'w') as newsale:
+                        with open('json/sale.json', 'w') as newsale:
                             json.dump(saledict, newsale)
-                    with open('steam.json', 'w') as newsteam:
+                    with open('json/steam.json', 'w') as newsteam:
                         json.dump(steamdict, newsteam)
 
                         embed = discord.Embed(title=url, description="Channel is now unsubscribed from that game.",
@@ -102,7 +102,7 @@ class Sub:
     @commands.command(pass_context=True)
     async def subbed(self, ctx):
         channelid = ctx.message.channel.id
-        with open('steam.json') as steam:
+        with open('json/steam.json') as steam:
             steamdict = json.load(steam)
         subbedlist = [url for url in steamdict if channelid in steamdict[url]]
         if len(subbedlist) == 0:

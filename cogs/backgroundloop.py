@@ -1,4 +1,4 @@
-from SteamApp import SteamApp
+from modules.steamapp import SteamApp
 import asyncio
 import json
 
@@ -10,7 +10,7 @@ class BackgroundLoop:
 
     async def backgroundloop(self):
         while not self.client.is_closed:
-            with open('steam.json') as steam:
+            with open('json/steam.json') as steam:
                 steamdict = json.load(steam)
             for url in steamdict:
                 splices = url.split('/')

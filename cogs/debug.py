@@ -1,5 +1,5 @@
 from discord.ext import commands
-from steamapp import SteamApp
+from modules.steamapp import SteamApp
 import discord
 
 

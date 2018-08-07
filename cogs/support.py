@@ -14,7 +14,7 @@ class Support:
                                   description="This is a small act that shows us your appreciation.",
                                   color=0xebbe23)
             await self.client.say(embed=embed)
-            with open('slice.json') as slice:
+            with open('json/slice.json') as slice:
                 slicedict = json.load(slice)
             if 'anon' not in slicedict:
                 slicedict['anon'] = 1
@@ -24,14 +24,14 @@ class Support:
                 slicedict['total'] = 1
             else:
                 slicedict['total'] += 1
-            with open('slice.json', 'w') as newslice:
+            with open('json/slice.json', 'w') as newslice:
                 json.dump(slicedict, newslice)
             sliceembed = discord.Embed(title="You got sent a slice from anon!",
                                   description=f"Slices recieved: {str(slicedict['total'])}",
                                   color=0xebbe23)
             await self.client.send_message(discord.Object(id='466807163323416588'), embed=sliceembed)
         if anon == "me":
-            with open('slice.json') as slice:
+            with open('json/slice.json') as slice:
                 slicedict = json.load(slice)
             username = ctx.message.author.name
             userid = ctx.message.author.id
@@ -49,7 +49,7 @@ class Support:
                 await self.client.say(embed=embed)
                 slicedict['users'].append(userid)
                 slicedict['total'] += 1
-                with open('slice.json', 'w') as newslice:
+                with open('json/slice.json', 'w') as newslice:
                     json.dump(slicedict, newslice)
                 sliceembed = discord.Embed(title=f"You got sent a slice from {username}!",
                                       description=f"Slices recieved: {str(slicedict['total'])}",

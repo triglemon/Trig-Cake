@@ -1,6 +1,6 @@
 import json
 from bs4 import BeautifulSoup as Soup
-from tryget import tryget
+from modules.tryget import tryget
 import discord
 
 
@@ -24,12 +24,12 @@ class SteamApp:
         self.client = client
 
     def fetchupdate(self):
-        with open('update.json') as update:
+        with open('json/update.json') as update:
             updatedict = json.load(update)
         self.last = updatedict[self.url]
 
     def fetchsale(self):
-        with open('sale.json') as sale:
+        with open('json/sale.json') as sale:
             saledict = json.load(sale)
         self.lastsale = saledict[self.url]
 
@@ -65,12 +65,12 @@ class SteamApp:
             embed.set_author(name=self.postauthor)
             embed.set_footer(text="Github repo: https://github.com/triglemon/Trig-Cake")
             embed.set_image(url=self.thumbnail)
-            with open('update.json') as update:
+            with open('json/update.json') as update:
                 updatedict = json.load(update)
             updatedict[self.url] = self.found
-            with open('update.json', 'w') as newupdate:
+            with open('json/update.json', 'w') as newupdate:
                 json.dump(updatedict, newupdate)
-            with open('steam.json') as steam:
+            with open('json/steam.json') as steam:
                 steamdict = json.load(steam)
             for channel in steamdict[self.url]:
                 await self.client.send_message(discord.Object(id=channel), embed=embed)
@@ -81,19 +81,19 @@ class SteamApp:
                                        color=0xebbe23)
             embed.set_footer(text="Github repo: https://github.com/triglemon/Trig-Cake")
             embed.set_image(url=self.thumbnail)
-            with open('sale.json') as sale:
+            with open('json/sale.json') as sale:
                 saledict = json.load(sale)
             saledict[self.url] = True
-            with open('sale.json', 'w') as newsale:
+            with open('json/sale.json', 'w') as newsale:
                 json.dump(saledict, newsale)
-            with open('steam.json') as steam:
+            with open('json/steam.json') as steam:
                 steamdict = json.load(steam)
             for channel in steamdict[self.url]:
                 await self.client.send_message(discord.Object(id=channel), embed=embed)
         if self.lastsale and not self.foundsale:
-            with open('sale.json') as sale:
+            with open('json/sale.json') as sale:
                 saledict = json.load(sale)
             saledict[self.url] = False
-            with open('sale.json', 'w') as newsale:
+            with open('json/sale.json', 'w') as newsale:
                 json.dump(saledict, newsale)
 
