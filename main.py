@@ -2,7 +2,7 @@ from discord.ext import commands
 import logging
 
 
-startup_extensions = ['ask', 'sub', 'debug', 'backgroundloop', 'support']
+startup_extensions = ['cogs.ask', 'cogs.sub', 'cogs.debug', 'cogs.backgroundloop', 'cogs.support']
 description = "Type !cakeask in chat for a list of commands and more info."
 client = commands.Bot(command_prefix='!cake', description=description, hidden=False)
 
