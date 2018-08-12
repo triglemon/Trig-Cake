@@ -1,19 +1,25 @@
 import discord
+import asyncio
 
 
-class Embed:
-    def __init__(self, title, url, description, ctx):
-        self.title = title
-        self.url = url
-        self.description = description
-        self.ctx = ctx
-        self.embed = discord.Embed(title=self.title, url=self.url, description=self.description, color=0xebbe23)
-        self.embed.set_footer(text="Request an action by reacting with the relevant emojis")
-
-    async def launch(self, *commands):
-        message = self.ctx.send(self.embed)
-        await message
-        for command in commands:
-            await message.add_reaction(next(iter(command)))
+def embed(title, description, url=None):
+    message = discord.Embed(title=title, url=url, description=description, color=0xebbe23)
+    message.set_footer(text="Request an action by reacting with the relevant emojis")
+    return message
 
 
+async def launch(post, commands, ctx, bot):
+    message = await ctx.send(embed=post)
+    for command in commands:
+        await message.add_reaction(command)
+
+    def check(reaction, user):
+        return user == ctx.message.author and str(reaction.emoji) in commands
+
+    try:
+        reaction = await bot.wait_for('reaction_add', timeout=30.0, check=check)
+    except asyncio.TimeoutError:
+        message.delete()
+        await ctx.send('Function has timed out')
+    else:
+        return reaction[0].emoji

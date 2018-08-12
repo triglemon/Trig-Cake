@@ -6,9 +6,10 @@ aiosess = aiohttp.ClientSession(cookies=age)
 
 
 async def tryget(url):
-    async with aiosess.get(url) as doc:
-        while True:
-            if doc.status == 200:
-                break
-            await asyncio.sleep(5)
-        return await doc.text()
+    async with aiohttp as sess:
+        async with sess.get(url) as doc:
+            while True:
+                if doc.status == 200:
+                    break
+                await asyncio.sleep(5)
+            return await doc.text()
