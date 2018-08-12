@@ -1,51 +1,49 @@
+import discord
 from discord.ext import commands
 import logging
 
 
-startup_extensions = ['cogs.ask', 'cogs.sub', 'cogs.debug', 'cogs.backgroundloop', 'cogs.support']
-description = "Type !cakeask in chat for a list of commands and more info."
-client = commands.Bot(command_prefix='!cake', description=description, hidden=False)
+startup_extensions = ['cogs.steamgames']
+bot = commands.Bot(command_prefix='<&')
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s'))
 logger.addHandler(handler)
 
 
-@client.event
+@bot.event
 async def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+    print(f"Logged in as: {bot.user.name}, {bot.user.id}")
+    game = discord.Game("Baking in the oven")
+    await bot.change_presence(status=discord.Status.idle, activity=game)
 
 
-@client.command()
-async def load(extension_name: str):
+@bot.command()
+async def load(ctx, extension_name):
     try:
-        client.load_extension(extension_name)
+        bot.load_extension(extension_name)
     except (AttributeError, ImportError) as error:
-        await client.say("```py\n{}: {}\n```".format(type(error).__name__, str(error)))
+        await ctx.send(f"```py\n{type(error).__name__}: {str(error)}\n```")
         return
-    await client.say("{} loaded.".format(extension_name))
+    await ctx.send(f"{extension_name} loaded.")
 
 
-@client.command()
-async def unload(extension_name: str):
-    client.unload_extension(extension_name)
-    await client.say("{} unloaded.".format(extension_name))
+@bot.command()
+async def unload(ctx, extension_name):
+    bot.unload_extension(extension_name)
+    await ctx.send(f"{extension_name} unloaded.")
 
 
 if __name__ == "__main__":
     for extension in startup_extensions:
         try:
-            client.load_extension(extension)
+            bot.load_extension(extension)
         except Exception as e:
             exc = '{}: {}'.format(type(e).__name__, e)
-            print('Failed to load extension {}\n{}'.format(extension, exc))
+            print(f'Failed to load extension {extension}\n{exc}')
 
     with open('token') as file:
         token = file.read()
-    client.run(token)
-
+    bot.run(token, bot=True, reconnect=True)
