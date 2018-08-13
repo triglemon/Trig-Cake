@@ -23,8 +23,6 @@ async def launch(post, ctx, bot, timeout=None, commands=None):
     except asyncio.TimeoutError:
         await message.delete()
         await ctx.send('Function has timed out')
-    if reaction[0].emoji == '🇽':
-        await message.delete()
     else:
         await message.delete()
         return reaction[0].emoji
