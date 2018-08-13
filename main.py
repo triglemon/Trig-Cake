@@ -3,7 +3,7 @@ from discord.ext import commands
 from modules.embed import *
 
 
-startup_extensions = ['cogs.steamgames']
+startup_extensions = ['cogs.sub', 'cogs.background']
 bot = commands.Bot(command_prefix='<&')
 
 logger = logging.getLogger('discord')
@@ -21,6 +21,7 @@ async def on_ready():
 
 
 @bot.command()
+@commands.is_owner()
 async def load(ctx, extension_name):
     try:
         bot.load_extension(extension_name)
@@ -31,6 +32,7 @@ async def load(ctx, extension_name):
 
 
 @bot.command()
+@commands.is_owner()
 async def unload(ctx, extension_name):
     bot.unload_extension(extension_name)
     await ctx.send(f"{extension_name} unloaded.")
