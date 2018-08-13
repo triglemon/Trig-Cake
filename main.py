@@ -1,9 +1,9 @@
-from discord.ext import commands
 import logging
+from discord.ext import commands
 from modules.embed import *
 
 
-startup_extensions = []
+startup_extensions = ['cogs.steamgames']
 bot = commands.Bot(command_prefix='<&')
 
 logger = logging.getLogger('discord')
@@ -34,15 +34,6 @@ async def load(ctx, extension_name):
 async def unload(ctx, extension_name):
     bot.unload_extension(extension_name)
     await ctx.send(f"{extension_name} unloaded.")
-
-
-@bot.command()
-async def yeet(ctx):
-    thing = embed("Me", "You")
-    listed = ['1\u20e3', '2\u20e3', '3\u20e3', '4\u20e3']
-    emoji = await launch(thing, listed, ctx, bot)
-    await ctx.send(emoji)
-
 
 if __name__ == "__main__":
     for extension in startup_extensions:

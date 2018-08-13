@@ -6,8 +6,8 @@ import discord
 
 class SteamApp:
 
-    def __init__(self, url, client):
-        self.url = url
+    def __init__(self, appid, client):
+        self.id = appid
         self.name = None
         self.nurl = None
         self.last = None

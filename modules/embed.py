@@ -8,18 +8,23 @@ def embed(title, description, url=None):
     return message
 
 
-async def launch(post, commands, ctx, bot):
+async def launch(post, ctx, bot, timeout=None, commands=None):
     message = await ctx.send(embed=post)
-    for command in commands:
-        await message.add_reaction(command)
+    if commands:
+        for command in commands:
+            await message.add_reaction(command)
+    await message.add_reaction('🇽')
 
     def check(reaction, user):
-        return user == ctx.message.author and str(reaction.emoji) in commands
+        return user == ctx.message.author and (reaction.emoji == '🇽' or (reaction.emoji in commands or not command))
 
     try:
-        reaction = await bot.wait_for('reaction_add', timeout=30.0, check=check)
+        reaction = await bot.wait_for('reaction_add', timeout=timeout, check=check)
     except asyncio.TimeoutError:
-        message.delete()
+        await message.delete()
         await ctx.send('Function has timed out')
+    if reaction[0].emoji == '🇽':
+        await message.delete()
     else:
+        await message.delete()
         return reaction[0].emoji
