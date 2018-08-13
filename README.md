@@ -6,7 +6,7 @@
 
 ## Getting Started
 * Click [here](https://discordapp.com/oauth2/authorize?client_id=438429063879720960&scope=bot&permissions=93248) to add Trig Cake to a channel you manage.
-* Once Trig Cake has joined, type !cakeask in the channel to recieve a list of commands.
+* Once Trig Cake has joined, type <&help in the channel to recieve a list of commands.
 
 ## Support/Issues
 List of [known issues](https://github.com/triglemon/Trig-Cake/issues), which includes things to be fixed or have yet to be implemented.
@@ -24,3 +24,5 @@ If you found a bug or have a new idea/feature for the program, [you can report t
 Copyright (c) 2018 Rob Liu <br />
 See [LICENSE](LICENSE.txt) for more details.
 
+## Disclaimer
+THIS REPOSITORY AND ITS CONTENTS ARE NOT AFFILIATED WITH VALVE CORPORATION OR STEAM IN ANY WAY, SHAPE, OR FORM.
