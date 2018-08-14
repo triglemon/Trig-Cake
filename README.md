@@ -23,6 +23,3 @@ If you found a bug or have a new idea/feature for the program, [you can report t
 ## License
 Copyright (c) 2018 Rob Liu <br />
 See [LICENSE](LICENSE.txt) for more details.
-
-## Disclaimer
-THIS REPOSITORY AND ITS CONTENTS ARE NOT AFFILIATED WITH VALVE CORPORATION OR STEAM IN ANY WAY, SHAPE, OR FORM.
