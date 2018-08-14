@@ -3,8 +3,9 @@ from discord.ext import commands
 from modules.embed import *
 
 
-startup_extensions = ['cogs.sub', 'cogs.background']
+startup_extensions = ['cogs.sub', 'cogs.background', 'cogs.ask', 'cogs.debug']
 bot = commands.Bot(command_prefix='<&')
+bot.remove_command('help')
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)

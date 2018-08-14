@@ -3,3 +3,4 @@ __pycache__/
 token
 discord.log
 venv/
+jsonpurge.py

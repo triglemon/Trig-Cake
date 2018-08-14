@@ -22,13 +22,10 @@ class Sub:
         result = await tryget(searchurl)
         resultpage = Soup(result, 'html.parser')
         top5 = [title for title in resultpage('span', {'class': 'title'})[0:5]]
-        message = embed(f"Searching for {keyword}", "The following search results were found...")
-        commandlist = []
-        for entry in top5:
-            place = top5.index(entry) + 1
-            message.add_field(name=f"Entry #{place}", value=entry.text, inline=False)
-            commandlist.append(f'{place}\u20e3')
-        decision = await launch(message, ctx, self.bot, 30.0, commandlist)
+        entrylist = [entry.text for entry in top5]
+        message = Embed(f"Searching for {keyword}.", "The following search results were found...", self.bot, ctx)
+        message.prepare(entrylist)
+        decision = await message.launchspecial()
         entry = top5[int(decision[0]) - 1]
         name = entry.text
         appid = entry.parent.parent.parent['data-ds-appid']
@@ -57,24 +54,34 @@ class Sub:
                 json.dump(saledict, newsale)
             with open('json/subbed.json') as subbed:
                 subbeddict = json.load(subbed)
-            if ctx.message.channel.id not in subbeddict:
-                subbeddict[ctx.message.channel.id] = []
-            subbeddict[ctx.message.channel.id].append(appid)
+            if str(ctx.message.channel.id) not in subbeddict:
+                subbeddict[str(ctx.message.channel.id)] = []
+            subbeddict[str(ctx.message.channel.id)].append(appid)
             with open('json/subbed.json', 'w') as newsubbed:
                 json.dump(subbeddict, newsubbed)
         if ctx.message.channel.id in steamdict[appid]:
-            unsuccessful = embed("Unsuccessful.", f"This channel is already subscribed to {name}.")
-            await launch(unsuccessful, ctx, self.bot)
+            unsuccessful = Embed("Unsuccessful.", f"This channel is already subscribed to {name}.", self.bot, ctx)
+            await unsuccessful.launchnormal()
         else:
             steamdict[appid].append(ctx.message.channel.id)
             with open('json/steam.json', 'w') as newsteam:
                 json.dump(steamdict, newsteam)
-            success = embed("Success!", f"This channel is now subscribed to {name}!")
-            await launch(success, ctx, self.bot)
+            success = Embed("Success!", f"This channel is now subscribed to {name}!", self.bot, ctx)
+            await success.launchnormal()
 
-    # @commands.command(name='subbed')
-    # @commands.has_permissions(manage_channels=True)
-    # async def subbed(self, ctx):
+    @commands.command(name='subbed')
+    @commands.has_permissions(manage_channels=True)
+    async def subbed(self, ctx):
+        channelid = ctx.message.channel.id
+        with open('json/subbed.json') as subbed:
+            subbeddict = json.load(subbed)
+        with open('json/name.json') as name:
+            namedict = json.load(name)
+        namelist = [namedict[appid] for appid in subbeddict[str(channelid)]]
+        message = Embed(f"Searching for {self.bot.get_channel(channelid)}'s subscribed games.",
+                        "The following search results were found...", self.bot, ctx)
+        message.prepare(namelist)
+        await message.launchspecial()
 
 
 def setup(bot):

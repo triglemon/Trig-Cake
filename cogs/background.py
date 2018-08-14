@@ -9,6 +9,7 @@ class Background:
         self.bot.loop.create_task(self.background())
 
     async def background(self):
+        await self.bot.wait_until_ready()
         while not self.bot.is_closed():
             with open('json/steam.json') as steam:
                 steamdict = json.load(steam)
@@ -21,8 +22,6 @@ class Background:
                 steamgame.fetchsale()
                 await steamgame.gaben()
                 await steamgame.saletrigger()
-
-            print("looped")
             await asyncio.sleep(60 * 5)
 
 

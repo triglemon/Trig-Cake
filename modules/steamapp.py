@@ -47,7 +47,7 @@ class SteamApp:
         if self.foundsale:
             splices = tagline.split(' ')
             self.saleoff = splices[1]
-            self.saledesc = self.soup.find('p', {'class': 'game_purchase_discount_countdown'}).text
+            self.saledesc = soup.find('p', {'class': 'game_purchase_discount_countdown'}).text
 
     async def parse(self):
         newspage = await tryget(self.nurl)
@@ -60,9 +60,9 @@ class SteamApp:
 
     async def trigger(self):
         if self.found != self.last:
-            message = embed(self.found, f"New Steam announcement from {self.name}!", self.newslink)
-            message.set_author(name=self.postauthor)
-            message.set_image(url=self.thumbnail)
+            post = Embed(self.found, f"New Steam announcement from {self.name}!", self.bot, url=self.newslink)
+            post.message.set_author(name=self.postauthor)
+            post.message.set_image(url=self.thumbnail)
             with open('json/update.json') as update:
                 updatedict = json.load(update)
             updatedict[self.id] = self.found
@@ -71,13 +71,13 @@ class SteamApp:
             with open('json/steam.json') as steam:
                 steamdict = json.load(steam)
             for channelid in steamdict[self.id]:
-                channel = self.bot.get_all_channels().get_channel(channelid)
-                await channel.send(embed=message)
+                channel = self.bot.get_channel(channelid)
+                await channel.send(embed=post.message)
 
     async def saletrigger(self):
         if not self.lastsale and self.foundsale:
-            message = embed(self.name, self.url, self.saledesc)
-            message.set_image(url=self.thumbnail)
+            post = Embed(self.name, self.saledesc, self.bot, url=self.url)
+            post.message.set_image(url=self.thumbnail)
             with open('json/sale.json') as sale:
                 saledict = json.load(sale)
             saledict[self.id] = True
@@ -88,7 +88,7 @@ class SteamApp:
             for channelid in steamdict[self.id]:
                 print(channelid)
                 channel = self.bot.get_channel(channelid)
-                await channel.send(embed=message)
+                await channel.send(embed=post.message)
         if self.lastsale and not self.foundsale:
             with open('json/sale.json') as sale:
                 saledict = json.load(sale)
