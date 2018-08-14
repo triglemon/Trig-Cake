@@ -77,6 +77,5 @@ class Sub:
     # async def subbed(self, ctx):
 
 
-
 def setup(bot):
     bot.add_cog(Sub(bot))

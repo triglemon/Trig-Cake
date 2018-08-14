@@ -70,8 +70,9 @@ class SteamApp:
                 json.dump(updatedict, newupdate)
             with open('json/steam.json') as steam:
                 steamdict = json.load(steam)
-            for channel in steamdict[self.id]:
-                await self.bot.send_message(discord.Object(id=channel), embed=embed)
+            for channelid in steamdict[self.id]:
+                channel = self.bot.get_all_channels().get_channel(channelid)
+                await channel.send(embed=message)
 
     async def saletrigger(self):
         if not self.lastsale and self.foundsale:
@@ -84,8 +85,10 @@ class SteamApp:
                 json.dump(saledict, newsale)
             with open('json/steam.json') as steam:
                 steamdict = json.load(steam)
-            for channel in steamdict[self.id]:
-                await self.bot.send_message(discord.Object(id=channel), embed=embed)
+            for channelid in steamdict[self.id]:
+                print(channelid)
+                channel = self.bot.get_channel(channelid)
+                await channel.send(embed=message)
         if self.lastsale and not self.foundsale:
             with open('json/sale.json') as sale:
                 saledict = json.load(sale)

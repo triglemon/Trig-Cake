@@ -9,11 +9,12 @@ class Background:
         self.bot.loop.create_task(self.background())
 
     async def background(self):
-        while not self.bot.is_closed:
+        while not self.bot.is_closed():
             with open('json/steam.json') as steam:
                 steamdict = json.load(steam)
             for steamid in steamdict:
                 steamgame = SteamApp(steamid, self.bot)
+                steamgame.fetchname()
                 steamgame.fetchupdate()
                 await steamgame.parse()
                 await steamgame.trigger()
