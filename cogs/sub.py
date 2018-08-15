@@ -81,7 +81,9 @@ class Sub:
         message = Embed(f"Searching for {self.bot.get_channel(channelid)}'s subscribed games.",
                         "The following search results were found...", self.bot, ctx)
         message.prepare(namelist)
-        await message.launchspecial()
+        resulttup = await message.launchspecial()
+        game = namelist[int(resulttup[1][0]) - 1 + resulttup[0] * 9]
+
 
 
 def setup(bot):

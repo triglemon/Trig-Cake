@@ -15,7 +15,7 @@ class Ask:
         post.message.set_author(name="Github Repo ",
                                 url="https://github.com/triglemon/Trig-Cake",
                                 icon_url="https://raw.githubusercontent.com/triglemon/Trig-Cake/Cog-Cake/Logo.png")
-        post.message.add_field(name="sub -url of store page-", value="Subscribes channel to a game.", inline=False)
+        post.message.add_field(name="sub -search terms-", value="Subscribes channel to a game.", inline=False)
         post.message.add_field(name="subbed", value="Prints list of games the channel is subscribed to.", inline=False)
 
         await post.launchnormal()

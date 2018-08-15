@@ -68,7 +68,7 @@ class Embed:
                 index = int(index + 1)
                 pass
             else:
-                return launched
+                return index, launched
 
     async def launchnormal(self, timeout=None):
         if self.messagelist:
