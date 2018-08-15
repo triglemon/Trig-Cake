@@ -26,7 +26,7 @@ class Sub:
         message = Embed(f"Searching for {keyword}.", "The following search results were found...", self.bot, ctx)
         message.prepare(entrylist)
         decision = await message.launchspecial()
-        entry = top5[int(decision[0]) - 1]
+        entry = top5[int(decision[1][0]) - 1]
         name = entry.text
         appid = entry.parent.parent.parent['data-ds-appid']
         with open('json/steam.json') as steam:
