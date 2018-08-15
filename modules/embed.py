@@ -85,7 +85,8 @@ class Embed:
             await self.bot.wait_for('reaction_add', timeout=timeout, check=check)
         except asyncio.TimeoutError:
             await post.delete()
-            await self.ctx.send('Function has timed out')
+            error = Embed("Error", "Function has timed out.", self.bot, self.ctx)
+            await error.launchnormal()
         else:
             await post.delete()
 
