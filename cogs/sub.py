@@ -78,12 +78,13 @@ class Sub:
         with open('json/name.json') as name:
             namedict = json.load(name)
         namelist = [namedict[appid] for appid in subbeddict[str(channelid)]]
+        idlist = [appid for appid in subbeddict[str(channelid)]]
         message = Embed(f"Searching for {self.bot.get_channel(channelid)}'s subscribed games.",
                         "The following search results were found...", self.bot, ctx)
         message.prepare(namelist)
         resulttup = await message.launchspecial()
-        game = namelist[int(resulttup[1][0]) - 1 + resulttup[0] * 9]
-
+        appid = idlist[int(resulttup[1][0]) - 1 + resulttup[0] * 9]
+        print(appid)
 
 
 def setup(bot):

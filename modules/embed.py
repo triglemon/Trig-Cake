@@ -88,3 +88,5 @@ class Embed:
             await self.ctx.send('Function has timed out')
         else:
             await post.delete()
+
+    # async def launchstoregame(self, timeout=None):
