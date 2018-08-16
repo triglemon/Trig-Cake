@@ -1,9 +1,13 @@
+"""
+This module contains commands to subscribe to and interact with subscribed
+Steam games.
+"""
 import json
 from discord.ext import commands
 from bs4 import BeautifulSoup as Soup
-from modules.tryget import tryget
+from modules.tryget import try_get
 from modules.steamapp import SteamApp
-from modules.embed import *
+from modules.embed import Embed
 
 
 class Sub:
@@ -12,79 +16,100 @@ class Sub:
 
     @commands.command(name='sub')
     @commands.has_permissions(manage_channels=True)
-    async def sub(self, ctx, *args):
-        searchurl = 'https://store.steampowered.com/search/?term='
-        keyword = ""
-        for arg in args:
-            keyword = keyword + " " + arg
-            searchurl = searchurl + f'{arg}+'
-        searchurl = searchurl[:-1]
-        result = await tryget(searchurl)
-        resultpage = Soup(result, 'html.parser')
-        top5 = [title for title in resultpage('span', {'class': 'title'})[0:5]]
-        entrylist = [entry.text for entry in top5]
-        message = Embed(f"Searching for {keyword}.", "The following search results were found...", self.bot, ctx)
-        message.prepare(entrylist)
-        decision = await message.launchspecial()
-        entry = top5[int(decision[1][0]) - 1]
-        name = entry.text
-        appid = entry.parent.parent.parent['data-ds-appid']
+    async def sub(self, ctx, *search_terms):
+        """Subscribe to Steam games (only in single channel)"""
+        search_url = 'https://store.steampowered.com/search/?term='
+        search_line = ""
+        for term in search_terms:
+            search_line = search_line + " " + term
+            search_url = search_url + f'{term}+'
+        search_url = search_url[:-1]
+        search_result = await try_get(search_url)
+        search_soup = Soup(search_result, 'html.parser')
+        top_5 = [title for title in search_soup('span', {'class': 'title'})[0:5]]
+        entry_list = [entry.text for entry in top_5]
+        message = Embed(f"Searching for {search_line}.",
+                        "The following search results were found...",
+                        self.bot,
+                        ctx)
+        message.prepare(entry_list)
+        decision = await message.launch_special()
+        # Finding the decision made by getting the emoji and subtracting to get
+        # index in top_5
+        entry = top_5[int(decision[1][0]) - 1]
+        game_name = entry.text
+        app_id = entry.parent.parent.parent['data-ds-appid']
         with open('json/steam.json') as steam:
-            steamdict = json.load(steam)
-        if appid not in steamdict:
-            with open('json/name.json') as namefile:
-                namedict = json.load(namefile)
-            namedict[appid] = name
-            with open('json/name.json', 'w') as newname:
-                json.dump(namedict, newname)
-            steamdict[appid] = []
-            ng = SteamApp(appid, self.bot)
-            ng.fetchname()
-            await ng.parse()
-            await ng.gaben()
+            steam_dict = json.load(steam)
+        if app_id not in steam_dict:
+            with open('json/name.json') as name:
+                name_dict = json.load(name)
+            name_dict[app_id] = game_name
+            with open('json/name.json', 'w') as new_name:
+                json.dump(name_dict, new_name)
+            steam_dict[app_id] = []
+            new_game = SteamApp(app_id, self.bot)
+            new_game.fetch_name()
+            await new_game.parse_news()
+            await new_game.gaben_pls()
             with open('json/update.json') as update:
-                updatedict = json.load(update)
-            updatedict[appid] = ng.found
-            with open('json/update.json', 'w') as newupdate:
-                json.dump(updatedict, newupdate)
+                update_dict = json.load(update)
+            update_dict[app_id] = new_game.found_news
+            with open('json/update.json', 'w') as new_update:
+                json.dump(update_dict, new_update)
             with open('json/sale.json') as sale:
-                saledict = json.load(sale)
-            saledict[appid] = ng.foundsale
-            with open('json/sale.json', 'w') as newsale:
-                json.dump(saledict, newsale)
+                sale_dict = json.load(sale)
+            sale_dict[app_id] = new_game.found_sale
+            with open('json/sale.json', 'w') as new_sale:
+                json.dump(sale_dict, new_sale)
             with open('json/subbed.json') as subbed:
-                subbeddict = json.load(subbed)
-            if str(ctx.message.channel.id) not in subbeddict:
-                subbeddict[str(ctx.message.channel.id)] = []
-            subbeddict[str(ctx.message.channel.id)].append(appid)
-            with open('json/subbed.json', 'w') as newsubbed:
-                json.dump(subbeddict, newsubbed)
-        if ctx.message.channel.id in steamdict[appid]:
-            unsuccessful = Embed("Unsuccessful.", f"This channel is already subscribed to {name}.", self.bot, ctx)
-            await unsuccessful.launchnormal()
+                subbed_dict = json.load(subbed)
+            if str(ctx.message.channel.id) not in subbed_dict:
+                subbed_dict[str(ctx.message.channel.id)] = []
+            subbed_dict[str(ctx.message.channel.id)].append(app_id)
+            with open('json/subbed.json', 'w') as new_subbed:
+                json.dump(subbed_dict, new_subbed)
+        if ctx.message.channel.id in steam_dict[app_id]:
+            unsuccessful_post = Embed(
+                "Unsuccessful.",
+                f"This channel is already subscribed to {name}.",
+                self.bot,
+                ctx)
+            await unsuccessful_post.launch_normal()
         else:
-            steamdict[appid].append(ctx.message.channel.id)
-            with open('json/steam.json', 'w') as newsteam:
-                json.dump(steamdict, newsteam)
-            success = Embed("Success!", f"This channel is now subscribed to {name}!", self.bot, ctx)
-            await success.launchnormal()
+            steam_dict[app_id].append(ctx.message.channel.id)
+            with open('json/steam.json', 'w') as new_steam:
+                json.dump(steam_dict, new_steam)
+            successful_post = Embed(
+                "Success!",
+                f"This channel is now subscribed to {name}!",
+                self.bot,
+                ctx)
+            await successful_post.launch_normal()
 
     @commands.command(name='subbed')
     @commands.has_permissions(manage_channels=True)
     async def subbed(self, ctx):
-        channelid = ctx.message.channel.id
+        """Shows list of subscribed Steam Games in channel"""
+        channel_id = ctx.message.channel.id
         with open('json/subbed.json') as subbed:
-            subbeddict = json.load(subbed)
+            subbed_dict = json.load(subbed)
         with open('json/name.json') as name:
-            namedict = json.load(name)
-        namelist = [namedict[appid] for appid in subbeddict[str(channelid)]]
-        idlist = [appid for appid in subbeddict[str(channelid)]]
-        message = Embed(f"Searching for {self.bot.get_channel(channelid)}'s subscribed games.",
-                        "The following search results were found...", self.bot, ctx)
-        message.prepare(namelist)
-        resulttup = await message.launchspecial()
-        appid = idlist[int(resulttup[1][0]) - 1 + resulttup[0] * 9]
-        print(appid)
+            name_dict = json.load(name)
+        game_list = [name_dict[app_id]
+                     for app_id in subbed_dict[str(channel_id)]]
+        id_list = [app_id for app_id in subbed_dict[str(channel_id)]]
+        discord_post = Embed(
+            (f"Searching for {self.bot.get_channel(channel_id)}'s "
+             "subscribed games."),
+            "The following search results were found...",
+            self.bot,
+            ctx)
+        discord_post.prepare(game_list)
+        reaction_tup = await discord_post.launch_special()
+        # Finding app based on index in chunk and index of chunk in chunk list
+        app_id = id_list[int(reaction_tup[1][0]) - 1 + reaction_tup[0] * 9]
+        print(app_id)
 
 
 def setup(bot):

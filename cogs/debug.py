@@ -1,7 +1,10 @@
+"""
+This module contains commands for testing/debugging purposes.
+Mostly obselete.
+"""
+import discord
 from discord.ext import commands
 from modules.steamapp import SteamApp
-import discord
-import datetime
 
 
 class Debug:
@@ -11,24 +14,27 @@ class Debug:
     @commands.command(name='found')
     @commands.is_owner()
     async def found(self, appid):
+        """Finds newest announcement"""
         stm = SteamApp(appid, self.bot)
-        await stm.parse()
-        stm.fetchupdate()
-        embed = discord.Embed(title=stm.name, description=stm.found)
+        await stm.parse_news()
+        stm.fetch_update()
+        embed = discord.Embed(title=stm.name, description=stm.found_news)
         await self.bot.say(embed=embed)
 
     @commands.command(name='last')
     @commands.is_owner()
     async def last(self, appid):
+        """Gets last announcement from json"""
         stm = SteamApp(appid, self.bot)
-        stm.fetchupdate()
-        stm.fetchname()
-        embed = discord.Embed(title=stm.name, description=stm.last)
+        stm.fetch_update()
+        stm.fetch_name()
+        embed = discord.Embed(title=stm.name, description=stm.last_news)
         await self.bot.say(embed=embed)
 
     @commands.command(name='purge')
     @commands.is_owner()
-    async def purgechannel(self, ctx):
+    async def purge_channel(self, ctx):
+        """Purges testing channel only"""
         channel = self.bot.get_channel(466807163323416588)
         await channel.purge(limit=100)
         await ctx.send("Purged!")

@@ -1,16 +1,22 @@
+"""
+Main module of Trig-Cake. Runs the bot and loads cogs as command modules.
+"""
 import logging
+import discord
 from discord.ext import commands
-from modules.embed import *
 
 
-startup_extensions = ['cogs.sub', 'cogs.background', 'cogs.ask', 'cogs.debug']
+STARTUP_EXTENSIONS = ['cogs.sub', 'cogs.background', 'cogs.ask', 'cogs.debug']
 bot = commands.Bot(command_prefix='<&')
 bot.remove_command('help')
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s'))
+handler = logging.FileHandler(filename='discord.log',
+                              encoding='utf-8',
+                              mode='w')
+handler.setFormatter(logging.Formatter(
+    '%(asctime)s:%(levelname)s:%(name)s:%(message)s'))
 logger.addHandler(handler)
 
 
@@ -39,13 +45,13 @@ async def unload(ctx, extension_name):
     await ctx.send(f"{extension_name} unloaded.")
 
 if __name__ == "__main__":
-    for extension in startup_extensions:
+    for extension in STARTUP_EXTENSIONS:
         try:
             bot.load_extension(extension)
         except Exception as e:
-            exc = '{}: {}'.format(type(e).__name__, e)
+            exc = f"{type(e).__name__}: {e}"
             print(f'Failed to load extension {extension}\n{exc}')
 
     with open('token') as file:
-        token = file.read()
-    bot.run(token, bot=True, reconnect=True)
+        TOKEN = file.read()
+    bot.run(TOKEN, bot=True, reconnect=True)
