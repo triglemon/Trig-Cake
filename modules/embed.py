@@ -70,7 +70,7 @@ class Embed:
             else:
                 return index, launched
 
-    async def launchnormal(self, timeout=None):
+    async def launchnormal(self):
         if self.messagelist:
             self.message = self.messagelist[0]
         post = await self.ctx.send(embed=self.message)
@@ -82,12 +82,13 @@ class Embed:
             postbool = reaction.message.id == post.id
             return emojibool and userbool and postbool
         try:
-            await self.bot.wait_for('reaction_add', timeout=timeout, check=check)
+            await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
         except asyncio.TimeoutError:
             await post.delete()
             error = Embed("Error", "Function has timed out.", self.bot, self.ctx)
             await error.launchnormal()
         else:
             await post.delete()
+
 
     # async def launchstoregame(self, timeout=None):
