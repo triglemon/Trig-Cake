@@ -15,21 +15,23 @@ class Debug:
     @commands.is_owner()
     async def found(self, appid):
         """Finds newest announcement"""
-        stm = SteamApp(appid, self.bot)
-        await stm.parse_news()
-        stm.fetch_update()
-        embed = discord.Embed(title=stm.name, description=stm.found_news)
-        await self.bot.say(embed=embed)
+        steam_game = SteamApp(appid, self.bot)
+        await steam_game.parse_news()
+        steam_game.fetch_update()
+        discord_post = discord.Embed(title=steam_game.name,
+                                     description=steam_game.found_news)
+        await self.bot.say(embed=discord_post)
 
     @commands.command(name='last')
     @commands.is_owner()
     async def last(self, appid):
         """Gets last announcement from json"""
-        stm = SteamApp(appid, self.bot)
-        stm.fetch_update()
-        stm.fetch_name()
-        embed = discord.Embed(title=stm.name, description=stm.last_news)
-        await self.bot.say(embed=embed)
+        steam_game = SteamApp(appid, self.bot)
+        steam_game.fetch_update()
+        steam_game.fetch_name()
+        discord_post = discord.Embed(title=steam_game.name,
+                                     description=steam_game.last_news)
+        await self.bot.say(embed=discord_post)
 
     @commands.command(name='purge')
     @commands.is_owner()
