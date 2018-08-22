@@ -2,10 +2,10 @@
 This module contains the logic for formatting and sending embeds, and executing
 commands based on emoji reactions.
 """
+import json
 import asyncio
 import copy
 import discord
-import json
 
 
 class Embed:
@@ -78,6 +78,7 @@ class Embed:
             user_bool = user == self.ctx.message.author
             post_bool = reaction.message.id == discord_post.id
             return emoji_bool and user_bool and post_bool
+
         try:
             reaction = await self.bot.wait_for('reaction_add',
                                                timeout=timeout,
@@ -88,7 +89,7 @@ class Embed:
                           "Function has timed out.",
                           self.bot,
                           self.ctx)
-            await self.ctx.send(Embed=error)
+            await self.ctx.send(embed=error.message)
         else:
             await discord_post.delete()
             return reaction[0].emoji
@@ -119,15 +120,11 @@ class Embed:
             user_bool = user == self.ctx.message.author
             post_bool = reaction.message.id == discord_post.id
             return emoji_bool and user_bool and post_bool
+
         try:
             await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
         except asyncio.TimeoutError:
             await discord_post.delete()
-            error = Embed("Error",
-                          "Function has timed out.",
-                          self.bot,
-                          self.ctx)
-            await self.ctx.send(Embed=error)
         else:
             await discord_post.delete()
 
@@ -147,11 +144,11 @@ class Embed:
             await discord_post.add_reaction(emoji)
 
         def check(reaction, user):
-            """3 boolean checks for valid emoji, same user, and same post"""
             emoji_bool = reaction.emoji in ['📰', '💸', '🚚']
             user_bool = user == self.ctx.message.author
             post_bool = reaction.message.id == discord_post.id
             return emoji_bool and user_bool and post_bool
+
         try:
             reaction = await self.bot.wait_for('reaction_add',
                                                timeout=60.0,
@@ -162,7 +159,7 @@ class Embed:
                           "Function has timed out.",
                           self.bot,
                           self.ctx)
-            await self.ctx.send(Embed=error)
+            await self.ctx.send(embed=error.message)
         else:
             await discord_post.delete()
             if str(reaction[0]) == '📰':
@@ -193,14 +190,14 @@ class Embed:
                 with open('json/subbed.json') as subbed:
                     subbed_dict = json.load(subbed)
                 subbed_dict[str(self.ctx.channel.id)].remove(steam_game.app_id)
-                if len(subbed_dict[str(self.ctx.channel.id)]) == 0:
+                if not subbed_dict[str(self.ctx.channel.id)]:
                     del subbed_dict[str(self.ctx.channel.id)]
                 with open('json/subbed.json', 'w') as new_subbed:
                     json.dump(subbed_dict, new_subbed)
                 with open('json/steam.json') as steam:
                     steam_dict = json.load(steam)
                 steam_dict[steam_game.app_id].remove(self.ctx.channel.id)
-                if len(steam_dict[steam_game.app_id]) == 0:
+                if not steam_dict[steam_game.app_id]:
                     del steam_dict[steam_game.app_id]
                     for file_name in ['name', 'sale', 'update']:
                         with open(f'json/{file_name}.json') as json_file:

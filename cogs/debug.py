@@ -1,6 +1,5 @@
 """
-This module contains commands for testing/debugging purposes.
-Mostly obselete.
+This module contains commands for testing/debugging purposes. Mostly obselete.
 """
 import discord
 from discord.ext import commands

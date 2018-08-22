@@ -41,6 +41,7 @@ class Sub:
         app_id = entry.parent.parent.parent['data-ds-appid']
         with open('json/steam.json') as steam:
             steam_dict = json.load(steam)
+        no_announcements = False
         if app_id not in steam_dict:
             with open('json/name.json') as name:
                 name_dict = json.load(name)
@@ -50,25 +51,37 @@ class Sub:
             steam_dict[app_id] = []
             new_game = SteamApp(app_id, self.bot)
             new_game.fetch_name()
-            await new_game.parse_news()
-            await new_game.gaben_pls()
-            with open('json/update.json') as update:
-                update_dict = json.load(update)
-            update_dict[app_id] = new_game.found_news
-            with open('json/update.json', 'w') as new_update:
-                json.dump(update_dict, new_update)
-            with open('json/sale.json') as sale:
-                sale_dict = json.load(sale)
-            sale_dict[app_id] = new_game.found_sale
-            with open('json/sale.json', 'w') as new_sale:
-                json.dump(sale_dict, new_sale)
-            with open('json/subbed.json') as subbed:
-                subbed_dict = json.load(subbed)
-            if str(ctx.message.channel.id) not in subbed_dict:
-                subbed_dict[str(ctx.message.channel.id)] = []
-            subbed_dict[str(ctx.message.channel.id)].append(app_id)
-            with open('json/subbed.json', 'w') as new_subbed:
-                json.dump(subbed_dict, new_subbed)
+            try:
+                await new_game.parse_news()
+            except AttributeError:
+                del name_dict[app_id]
+                with open('json/name.json', 'w') as new_name:
+                    json.dump(name_dict, new_name)
+                no_announcements = True
+                error = Embed("Error",
+                              "This game doesn't have announcements yet.",
+                              self.bot,
+                              ctx)
+                await ctx.send(embed=error.message)
+            else:
+                await new_game.gaben_pls()
+                with open('json/update.json') as update:
+                    update_dict = json.load(update)
+                update_dict[app_id] = new_game.found_news
+                with open('json/update.json', 'w') as new_update:
+                    json.dump(update_dict, new_update)
+                with open('json/sale.json') as sale:
+                    sale_dict = json.load(sale)
+                sale_dict[app_id] = new_game.found_sale
+                with open('json/sale.json', 'w') as new_sale:
+                    json.dump(sale_dict, new_sale)
+                with open('json/subbed.json') as subbed:
+                    subbed_dict = json.load(subbed)
+                if str(ctx.message.channel.id) not in subbed_dict:
+                    subbed_dict[str(ctx.message.channel.id)] = []
+                subbed_dict[str(ctx.message.channel.id)].append(app_id)
+                with open('json/subbed.json', 'w') as new_subbed:
+                    json.dump(subbed_dict, new_subbed)
         if ctx.message.channel.id in steam_dict[app_id]:
             unsuccessful_post = Embed(
                 "Unsuccessful.",
@@ -77,15 +90,16 @@ class Sub:
                 ctx)
             await unsuccessful_post.launch_normal()
         else:
-            steam_dict[app_id].append(ctx.message.channel.id)
-            with open('json/steam.json', 'w') as new_steam:
-                json.dump(steam_dict, new_steam)
-            successful_post = Embed(
-                "Success!",
-                f"This channel is now subscribed to {game_name}!",
-                self.bot,
-                ctx)
-            await successful_post.launch_normal()
+            if not no_announcements:
+                steam_dict[app_id].append(ctx.message.channel.id)
+                with open('json/steam.json', 'w') as new_steam:
+                    json.dump(steam_dict, new_steam)
+                successful_post = Embed(
+                    "Success!",
+                    f"This channel is now subscribed to {game_name}!",
+                    self.bot,
+                    ctx)
+                await successful_post.launch_normal()
 
     @commands.command(name='subbed')
     @commands.has_permissions(manage_channels=True)
@@ -98,7 +112,7 @@ class Sub:
             name_dict = json.load(name)
         try:
             game_list = [name_dict[app_id]
-                        for app_id in subbed_dict[str(channel_id)]]
+                         for app_id in subbed_dict[str(channel_id)]]
         except KeyError:
             error = Embed("Error",
                           "Channel is not subscribed to any games.",

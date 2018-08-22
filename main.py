@@ -6,7 +6,10 @@ import discord
 from discord.ext import commands
 
 
-STARTUP_EXTENSIONS = ['cogs.sub', 'cogs.background', 'cogs.ask', 'cogs.debug']
+STARTUP_EXTENSIONS = ['cogs.sub',
+                      'cogs.background',
+                      'cogs.ask',
+                      'cogs.debug']
 bot = commands.Bot(command_prefix='<&')
 bot.remove_command('help')
 

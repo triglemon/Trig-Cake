@@ -24,15 +24,19 @@ class Ask:
             icon_url=("https://raw.githubusercontent.com/"
                       "triglemon/Trig-Cake/Cog-Cake/Logo.png"))
         discord_post.message.add_field(name="sub -search terms-",
-                                       value="Subscribes channel to a game.",
+                                       value="Subscribes channel to a game."
+                                             "Channels will automatically "
+                                             "unsub after the bot leaves or is"
+                                             "blocked from sending messages.",
                                        inline=False)
         discord_post.message.add_field(
             name="subbed",
-            value="Prints list of games the channel is subscribed to.",
+            value="Prints list of games the channel is subscribed to, with"
+                  "further commands available.",
             inline=False)
 
         await discord_post.launch_normal()
 
 
-def setup(client):
-    client.add_cog(Ask(client))
+def setup(bot):
+    bot.add_cog(Ask(bot))
