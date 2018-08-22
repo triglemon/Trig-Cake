@@ -5,6 +5,7 @@ commands based on emoji reactions.
 import asyncio
 import copy
 import discord
+import json
 
 
 class Embed:
@@ -73,7 +74,7 @@ class Embed:
         def check(reaction, user):
             """3 boolean checks for valid emoji, same user, and same post"""
             emoji_bool = reaction.emoji in ['🇽', '➡', '⬅'] \
-                        or (reaction.emoji in command_list)
+                or (reaction.emoji in command_list)
             user_bool = user == self.ctx.message.author
             post_bool = reaction.message.id == discord_post.id
             return emoji_bool and user_bool and post_bool
@@ -83,7 +84,11 @@ class Embed:
                                                check=check)
         except asyncio.TimeoutError:
             await discord_post.delete()
-            await self.ctx.send('Function has timed out')
+            error = Embed("Error",
+                          "Function has timed out.",
+                          self.bot,
+                          self.ctx)
+            await self.ctx.send(Embed=error)
         else:
             await discord_post.delete()
             return reaction[0].emoji
@@ -122,8 +127,99 @@ class Embed:
                           "Function has timed out.",
                           self.bot,
                           self.ctx)
-            await error.launch_normal()
+            await self.ctx.send(Embed=error)
         else:
             await discord_post.delete()
 
-    # async def launchstoregame(self, timeout=None):
+    async def launch_game(self, steam_game):
+        """For launching game-specific commands from <&subbed"""
+        self.message.add_field(name='📰',
+                               value='Get latest news',
+                               inline=False)
+        self.message.add_field(name='💸',
+                               value='Check for sale',
+                               inline=False)
+        self.message.add_field(name='🚚',
+                               value='Unsubscribe from this game',
+                               inline=False)
+        discord_post = await self.ctx.send(embed=self.message)
+        for emoji in ['📰', '💸', '🚚']:
+            await discord_post.add_reaction(emoji)
+
+        def check(reaction, user):
+            """3 boolean checks for valid emoji, same user, and same post"""
+            emoji_bool = reaction.emoji in ['📰', '💸', '🚚']
+            user_bool = user == self.ctx.message.author
+            post_bool = reaction.message.id == discord_post.id
+            return emoji_bool and user_bool and post_bool
+        try:
+            reaction = await self.bot.wait_for('reaction_add',
+                                               timeout=60.0,
+                                               check=check)
+        except asyncio.TimeoutError:
+            await discord_post.delete()
+            error = Embed("Error",
+                          "Function has timed out.",
+                          self.bot,
+                          self.ctx)
+            await self.ctx.send(Embed=error)
+        else:
+            await discord_post.delete()
+            if str(reaction[0]) == '📰':
+                steam_game.fetch_update()
+                news_post = Embed(f"Latest news from {steam_game.name}",
+                                  steam_game.last_news,
+                                  self.bot,
+                                  self.ctx,
+                                  steam_game.news_link)
+                await news_post.launch_normal()
+            if str(reaction[0]) == '💸':
+                steam_game.gaben_pls()
+                if steam_game.found_sale:
+                    sale_post = Embed(f"{steam_game.name} on sale for "
+                                      f"{steam_game.percentage_off}!",
+                                      steam_game.sale_description,
+                                      self.bot,
+                                      self.ctx,
+                                      steam_game.url)
+                else:
+                    sale_post = Embed(f"{steam_game.name} is not on sale!",
+                                      "Better luck next time!",
+                                      self.bot,
+                                      self.ctx,
+                                      steam_game.url)
+                await sale_post.launch_normal()
+            if str(reaction[0]) == '🚚':
+                with open('json/subbed.json') as subbed:
+                    subbed_dict = json.load(subbed)
+                subbed_dict[str(self.ctx.channel.id)].remove(steam_game.app_id)
+                if len(subbed_dict[str(self.ctx.channel.id)]) == 0:
+                    del subbed_dict[str(self.ctx.channel.id)]
+                with open('json/subbed.json', 'w') as new_subbed:
+                    json.dump(subbed_dict, new_subbed)
+                with open('json/steam.json') as steam:
+                    steam_dict = json.load(steam)
+                steam_dict[steam_game.app_id].remove(self.ctx.channel.id)
+                if len(steam_dict[steam_game.app_id]) == 0:
+                    del steam_dict[steam_game.app_id]
+                    for file_name in ['name', 'sale', 'update']:
+                        with open(f'json/{file_name}.json') as json_file:
+                            json_dict = json.load(json_file)
+                        del json_dict[steam_game.app_id]
+                        with open(f'json/{file_name}.json', 'w') as new_json:
+                            json.dump(json_dict, new_json)
+                with open('json/steam.json', 'w') as new_steam:
+                    json.dump(steam_dict, new_steam)
+                unsub_post = Embed("Successful!",
+                                   "The channel has now unsubscribed from "
+                                   f"{steam_game.name}!",
+                                   self.bot,
+                                   self.ctx,)
+                await unsub_post.launch_normal()
+
+
+
+
+
+
+

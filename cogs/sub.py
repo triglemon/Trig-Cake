@@ -72,7 +72,7 @@ class Sub:
         if ctx.message.channel.id in steam_dict[app_id]:
             unsuccessful_post = Embed(
                 "Unsuccessful.",
-                f"This channel is already subscribed to {name}.",
+                f"This channel is already subscribed to {game_name}.",
                 self.bot,
                 ctx)
             await unsuccessful_post.launch_normal()
@@ -82,7 +82,7 @@ class Sub:
                 json.dump(steam_dict, new_steam)
             successful_post = Embed(
                 "Success!",
-                f"This channel is now subscribed to {name}!",
+                f"This channel is now subscribed to {game_name}!",
                 self.bot,
                 ctx)
             await successful_post.launch_normal()
@@ -96,20 +96,36 @@ class Sub:
             subbed_dict = json.load(subbed)
         with open('json/name.json') as name:
             name_dict = json.load(name)
-        game_list = [name_dict[app_id]
-                     for app_id in subbed_dict[str(channel_id)]]
-        id_list = [app_id for app_id in subbed_dict[str(channel_id)]]
-        discord_post = Embed(
-            (f"Searching for {self.bot.get_channel(channel_id)}'s "
-             "subscribed games."),
-            "The following search results were found...",
-            self.bot,
-            ctx)
-        discord_post.prepare(game_list)
-        reaction_tup = await discord_post.launch_special()
-        # Finding app based on index in chunk and index of chunk in chunk list
-        app_id = id_list[int(reaction_tup[1][0]) - 1 + reaction_tup[0] * 9]
-        print(app_id)
+        try:
+            game_list = [name_dict[app_id]
+                        for app_id in subbed_dict[str(channel_id)]]
+        except KeyError:
+            error = Embed("Error",
+                          "Channel is not subscribed to any games.",
+                          self.bot,
+                          ctx)
+            await error.launch_normal()
+        else:
+            id_list = [app_id for app_id in subbed_dict[str(channel_id)]]
+            discord_post = Embed(
+                f"Searching for {self.bot.get_channel(channel_id)}'s "
+                "subscribed games.",
+                "The following search results were found...",
+                self.bot,
+                ctx)
+            discord_post.prepare(game_list)
+            reaction_tup = await discord_post.launch_special()
+            # Finding app based on index in chunk and index of chunk in
+            # chunk list
+            app_id = id_list[int(reaction_tup[1][0]) - 1 + reaction_tup[0] * 9]
+            steam_game = SteamApp(app_id, self.bot)
+            steam_game.fetch_name()
+            discord_post = Embed(steam_game.name,
+                                 "What would you like to do?",
+                                 self.bot,
+                                 ctx,
+                                 steam_game.url)
+            await discord_post.launch_game(steam_game)
 
 
 def setup(bot):
