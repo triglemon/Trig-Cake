@@ -25,6 +25,12 @@ logger.addHandler(handler)
 
 @bot.event
 async def on_ready():
+    for extension in STARTUP_EXTENSIONS:
+        try:
+            bot.load_extension(extension)
+        except Exception as e:
+            exc = f"{type(e).__name__}: {e}"
+            print(f'Failed to load extension {extension}\n{exc}')
     print(f"Logged in as: {bot.user.name}, {bot.user.id}")
     game = discord.Game("Baking in the oven")
     await bot.change_presence(status=discord.Status.idle, activity=game)
@@ -48,13 +54,6 @@ async def unload(ctx, extension_name):
     await ctx.send(f"{extension_name} unloaded.")
 
 if __name__ == "__main__":
-    for extension in STARTUP_EXTENSIONS:
-        try:
-            bot.load_extension(extension)
-        except Exception as e:
-            exc = f"{type(e).__name__}: {e}"
-            print(f'Failed to load extension {extension}\n{exc}')
-
     with open('token') as file:
         TOKEN = file.read()
     bot.run(TOKEN, bot=True, reconnect=True)

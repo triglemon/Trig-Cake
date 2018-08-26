@@ -171,7 +171,7 @@ class Embed:
                                   steam_game.news_link)
                 await news_post.launch_normal()
             if str(reaction[0]) == '💸':
-                steam_game.gaben_pls()
+                await steam_game.gaben_pls()
                 if steam_game.found_sale:
                     sale_post = Embed(f"{steam_game.name} on sale for "
                                       f"{steam_game.percentage_off}!",
