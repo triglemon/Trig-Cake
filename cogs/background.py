@@ -6,23 +6,15 @@ a new headline has been posted every 5 minutes.
 At the start of the task, any unavailable channels are purges.
 """
 import asyncio
-import logging
 import json
 from modules.steamapp import SteamApp
+import datetime
 
 
 class Background:
     def __init__(self, bot):
-        def task_after(task):
-            exc = task.exception()
-            if exc is not None:
-                exc_info = exc.__class__, exc, exc.__traceback__
-                logging.log(logging.ERROR,
-                            'Error occurred in background task',
-                            exc_info=exc_info)
         self.bot = bot
-        task = self.bot.loop.create_task(self.background())
-        task.add_done_callback(task_after)
+        self.bot.loop.create_task(self.background())
 
     async def background(self):
 
@@ -70,6 +62,8 @@ class Background:
                 steam_game.fetch_sale()
                 await steam_game.gaben_pls()
                 await steam_game.sale_trigger()
+            with open('badlog', 'a') as badlog:
+                badlog.write(str(datetime.datetime.now()) + ' looped\n')
             await asyncio.sleep(60 * 5)
 
 

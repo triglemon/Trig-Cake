@@ -4,7 +4,7 @@ Store interactions are represented by.
 """
 import json
 from bs4 import BeautifulSoup as Soup
-from modules.tryget import try_get
+from modules.tryget import TryGet
 from modules.embed import Embed
 
 
@@ -47,8 +47,9 @@ class SteamApp:
 
     async def parse_news(self):
         """Parses news page to get current headline"""
-        news_page = await try_get(self.news_url)
-        news_soup = Soup(news_page, 'html.parser')
+        news_page = TryGet()
+        news_request = await news_page.get_request(self.news_url)
+        news_soup = Soup(news_request, 'html.parser')
         news_entry = news_soup.find('div', {'class': 'newsPostBlock'})
         self.found_news = news_entry.find('a').text
         self.news_link = news_entry.find('a')['href']
@@ -57,8 +58,9 @@ class SteamApp:
 
     async def gaben_pls(self):
         """Parses store page to get current sale value"""
-        store_page = await try_get(self.url)
-        store_soup = Soup(store_page, 'html.parser')
+        store_page = TryGet()
+        store_request = await store_page.get_request(self.url)
+        store_soup = Soup(store_request, 'html.parser')
         site_tag_line = store_soup.find('title').text
         check_no_sale = self.name + ' on Steam'
         self.found_sale = len(site_tag_line.replace(check_no_sale, '')) != 0

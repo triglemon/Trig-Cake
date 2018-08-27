@@ -213,10 +213,3 @@ class Embed:
                                    self.bot,
                                    self.ctx,)
                 await unsub_post.launch_normal()
-
-
-
-
-
-
-

@@ -1,36 +1,26 @@
 """
 This module contains commands for testing/debugging purposes. Mostly obselete.
 """
-import discord
 from discord.ext import commands
-from modules.steamapp import SteamApp
+from modules.tryget import TryGet
+from bs4 import BeautifulSoup as Soup
 
 
 class Debug:
     def __init__(self, bot):
         self.bot = bot
+        self.session = TryGet()
 
-    @commands.command(name='found')
+    @commands.command(name='status')
     @commands.is_owner()
-    async def found(self, appid):
-        """Finds newest announcement"""
-        steam_game = SteamApp(appid, self.bot)
-        await steam_game.parse_news()
-        steam_game.fetch_update()
-        discord_post = discord.Embed(title=steam_game.name,
-                                     description=steam_game.found_news)
-        await self.bot.say(embed=discord_post)
+    async def status(self, ctx):
+        await ctx.send("Is closed: " + str(self.session.session_status()))
 
-    @commands.command(name='last')
+    @commands.command(name='refresh')
     @commands.is_owner()
-    async def last(self, appid):
-        """Gets last announcement from json"""
-        steam_game = SteamApp(appid, self.bot)
-        steam_game.fetch_update()
-        steam_game.fetch_name()
-        discord_post = discord.Embed(title=steam_game.name,
-                                     description=steam_game.last_news)
-        await self.bot.say(embed=discord_post)
+    async def refresh(self, ctx):
+        await self.session.refresh_session()
+        await ctx.send("Is closed: " + str(self.session.session_status()))
 
     @commands.command(name='purge')
     @commands.is_owner()
@@ -39,6 +29,16 @@ class Debug:
         channel = self.bot.get_channel(466807163323416588)
         await channel.purge(limit=100)
         await ctx.send("Purged!")
+
+    @commands.command(name='me')
+    @commands.is_owner()
+    async def me(self, ctx):
+        my_request = await self.session.get_request(
+            'https://steamcommunity.com/id/punnedit/')
+        my_soup = Soup(my_request, 'html.parser')
+        my_quote = my_soup.find('meta', {'property': 'og:description'})
+        my_excerpt = my_quote['content']
+        await ctx.send(my_excerpt)
 
 
 def setup(bot):

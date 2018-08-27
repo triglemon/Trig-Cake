@@ -5,7 +5,7 @@ Steam games.
 import json
 from discord.ext import commands
 from bs4 import BeautifulSoup as Soup
-from modules.tryget import try_get
+from modules.tryget import TryGet
 from modules.steamapp import SteamApp
 from modules.embed import Embed
 
@@ -24,8 +24,9 @@ class Sub:
             search_line = search_line + " " + term
             search_url = search_url + f'{term}+'
         search_url = search_url[:-1]
-        search_result = await try_get(search_url)
-        search_soup = Soup(search_result, 'html.parser')
+        search_result = TryGet()
+        search_request = await search_result.get_request(search_url)
+        search_soup = Soup(search_request, 'html.parser')
         top_5 = [title for title in search_soup('span', {'class': 'title'})[0:5]]
         entry_list = [entry.text for entry in top_5]
         message = Embed(f"Searching for {search_line}.",
