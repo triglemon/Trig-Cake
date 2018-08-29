@@ -4,3 +4,4 @@ token
 discord.log
 venv/
 jsonpurge.py
+badlog
