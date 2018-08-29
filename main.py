@@ -24,24 +24,11 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 
 
-async def load_cogs_loop():
-    while True:
-        await asyncio.sleep(60 * 60 * 4)
-        for extension in STARTUP_EXTENSIONS:
-            bot.unload_extension(extension)
-            try:
-                bot.load_extension(extension)
-            except Exception as e:
-                exc = f"{type(e).__name__}: {e}"
-                print(f'Failed to load extension {extension}\n{exc}')
-
-
 @bot.event
 async def on_ready():
     print(f"Logged in as: {bot.user.name}, {bot.user.id}")
     game = discord.Game("Baking in the oven")
     await bot.change_presence(status=discord.Status.idle, activity=game)
-    bot.loop.create_task(load_cogs_loop())
 
 
 @bot.command()
