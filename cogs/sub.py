@@ -47,7 +47,6 @@ class Sub:
         no_announcements = False
         if app_id not in steam_dict:
             name_dict = await async_load('name')
-            print(name_dict, app_id, game_name)
             await new_value_dump(name_dict, app_id, game_name, 'name')
             steam_dict[app_id] = []
             new_game = SteamApp(app_id, self.bot)
