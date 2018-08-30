@@ -5,10 +5,14 @@ a new headline has been posted every 5 minutes.
 
 At the start of the task, any unavailable channels are purged.
 """
-import asyncio
 import json
-from modules.steamapp import SteamApp
 import datetime
+import asyncio
+import aiofiles
+from modules.steamapp import SteamApp
+from modules.json import async_load
+from modules.json import delete_dump
+from modules.json import remove_dump
 
 
 class Background:
@@ -19,32 +23,25 @@ class Background:
 
     async def purge_task(self):
 
-        def purge_channel(channel_id):
+        async def purge_channel(channel_id):
             id_list = subbed_dict[channel_id]
-            del subbed_dict[channel_id]
-            with open('json/subbed.json', 'w') as new_subbed:
-                json.dump(subbed_dict, new_subbed)
-            with open('json/steam.json') as steam:
-                steam_dict = json.load(steam)
+            await delete_dump(subbed_dict, channel_id, 'subbed')
+            steam_dict = await async_load('steam')
             for app_id in id_list:
-                steam_dict[app_id].remove(int(channel_id))
-                if not steam_dict[app_id]:
-                    del steam_dict[app_id]
+                last_entry = await remove_dump(steam_dict,
+                                               app_id,
+                                               int(channel_id),
+                                               'steam')
+                if last_entry:
                     for file_name in ['name', 'sale', 'update']:
-                        with open(f'json/{file_name}.json') as json_file:
-                            json_dict = json.load(json_file)
-                        del json_dict[app_id]
-                        with open(f'json/{file_name}.json', 'w') as new_json:
-                            json.dump(json_dict, new_json)
-            with open('json/steam.json', 'w') as new_steam:
-                json.dump(steam_dict, new_steam)
-            with open('badlog', 'a') as badlog:
-                badlog.write(str(datetime.datetime.now()) + ' Purge \n')
+                        json_dict = await async_load(file_name)
+                        await delete_dump(json_dict, app_id, file_name)
+            async with aiofiles.open('badlog', 'a') as badlog:
+                await badlog.write(str(datetime.datetime.now()) + ' Purge \n')
 
         await self.bot.wait_until_ready()
         while True:
-            with open('json/subbed.json') as subbed:
-                subbed_dict = json.load(subbed)
+            subbed_dict = await async_load('subbed')
             for channel_id in list(subbed_dict):
                 channel = self.bot.get_channel(int(channel_id))
                 if not channel:
@@ -58,19 +55,19 @@ class Background:
     async def scrape_task(self):
 
         async def scrape_steam():
-            with open('json/steam.json') as steam:
-                steam_dict = json.load(steam)
+            steam_dict = await async_load('steam')
             for steam_id in steam_dict:
                 steam_game = SteamApp(steam_id, self.bot)
-                steam_game.fetch_name()
-                steam_game.fetch_update()
+                await steam_game.fetch_name()
+                await steam_game.fetch_update()
                 await steam_game.parse_news()
                 await steam_game.news_trigger()
-                steam_game.fetch_sale()
+                await steam_game.fetch_sale()
                 await steam_game.gaben_pls()
                 await steam_game.sale_trigger()
-                with open('badlog', 'a') as badlog:
-                    badlog.write(str(datetime.datetime.now()) + ' Scrape \n')
+                async with open('badlog', 'a') as badlog:
+                    await badlog.write(
+                        str(datetime.datetime.now()) + ' Scrape \n')
 
         while True:
             await self.bot.wait_until_ready()

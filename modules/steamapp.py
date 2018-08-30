@@ -2,10 +2,11 @@
 This module holds the class SteamApp, which every Steam game and its Steam
 Store interactions are represented by.
 """
-import json
 from bs4 import BeautifulSoup as Soup
 from modules.tryget import TryGet
 from modules.embed import Embed
+from modules.json import async_load
+from modules.json import new_value_dump
 
 
 class SteamApp:
@@ -27,22 +28,19 @@ class SteamApp:
         self.thumbnail = None
         self.post_author = None
 
-    def fetch_update(self):
+    async def fetch_update(self):
         """Gets last stored update"""
-        with open('json/update.json') as update:
-            update_dict = json.load(update)
+        update_dict = await async_load('update')
         self.last_news = update_dict[self.app_id]
 
-    def fetch_sale(self):
+    async def fetch_sale(self):
         """Gets last stored sale value"""
-        with open('json/sale.json') as sale:
-            sale_dict = json.load(sale)
+        sale_dict = await async_load('sale')
         self.last_sale = sale_dict[self.app_id]
 
-    def fetch_name(self):
+    async def fetch_name(self):
         """Gets last stored sale value"""
-        with open('json/name.json') as name:
-            name_dict = json.load(name)
+        name_dict = await async_load('name')
         self.name = name_dict[self.app_id]
 
     async def parse_news(self):
@@ -79,13 +77,12 @@ class SteamApp:
                                  url=self.news_link)
             discord_post.message.set_author(name=self.post_author)
             discord_post.message.set_image(url=self.thumbnail)
-            with open('json/update.json') as update:
-                update_dict = json.load(update)
-            update_dict[self.app_id] = self.found_news
-            with open('json/update.json', 'w') as new_update:
-                json.dump(update_dict, new_update)
-            with open('json/steam.json') as steam:
-                steam_dict = json.load(steam)
+            update_dict = await async_load('update')
+            await new_value_dump(update_dict,
+                                 self.app_id,
+                                 self.found_news,
+                                 'update')
+            steam_dict = await async_load('steam')
             for channel_id in steam_dict[self.app_id]:
                 channel = self.bot.get_channel(channel_id)
                 await channel.send(embed=discord_post.message)
@@ -98,19 +95,18 @@ class SteamApp:
                                  self.bot,
                                  url=self.url)
             discord_post.message.set_image(url=self.thumbnail)
-            with open('json/sale.json') as sale:
-                sale_dict = json.load(sale)
-            sale_dict[self.app_id] = True
-            with open('json/sale.json', 'w') as new_sale:
-                json.dump(sale_dict, new_sale)
-            with open('json/steam.json') as steam:
-                steam_dict = json.load(steam)
+            sale_dict = await async_load('sale')
+            await new_value_dump(sale_dict,
+                                 self.app_id,
+                                 True,
+                                 'sale')
+            steam_dict = await async_load('steam')
             for channel_id in steam_dict[self.app_id]:
                 channel = self.bot.get_channel(channel_id)
                 await channel.send(embed=discord_post.message)
         if self.last_sale and not self.found_sale:
-            with open('json/sale.json') as sale:
-                sale_dict = json.load(sale)
-            sale_dict[self.app_id] = False
-            with open('json/sale.json', 'w') as new_sale:
-                json.dump(sale_dict, new_sale)
+            sale_dict = await async_load('sale')
+            await new_value_dump(sale_dict,
+                                 self.app_id,
+                                 False,
+                                 'sale')

@@ -2,10 +2,12 @@
 This module contains the logic for formatting and sending embeds, and executing
 commands based on emoji reactions.
 """
-import json
 import asyncio
 import copy
 import discord
+from modules.json import async_load
+from modules.json import remove_dump
+from modules.json import delete_dump
 
 
 class Embed:
@@ -187,26 +189,22 @@ class Embed:
                                       steam_game.url)
                 await sale_post.launch_normal()
             if str(reaction[0]) == '🚚':
-                with open('json/subbed.json') as subbed:
-                    subbed_dict = json.load(subbed)
-                subbed_dict[str(self.ctx.channel.id)].remove(steam_game.app_id)
-                if not subbed_dict[str(self.ctx.channel.id)]:
-                    del subbed_dict[str(self.ctx.channel.id)]
-                with open('json/subbed.json', 'w') as new_subbed:
-                    json.dump(subbed_dict, new_subbed)
-                with open('json/steam.json') as steam:
-                    steam_dict = json.load(steam)
-                steam_dict[steam_game.app_id].remove(self.ctx.channel.id)
-                if not steam_dict[steam_game.app_id]:
-                    del steam_dict[steam_game.app_id]
+                subbed_dict = await async_load('subbed')
+                await remove_dump(subbed_dict,
+                                  str(self.ctx.channel.id),
+                                  steam_game.app_id,
+                                  'subbed')
+                steam_dict = await async_load('steam')
+                last_entry = await remove_dump(steam_dict,
+                                               steam_game.app_id,
+                                               self.ctx.channel.id,
+                                               'steam')
+                if last_entry:
                     for file_name in ['name', 'sale', 'update']:
-                        with open(f'json/{file_name}.json') as json_file:
-                            json_dict = json.load(json_file)
-                        del json_dict[steam_game.app_id]
-                        with open(f'json/{file_name}.json', 'w') as new_json:
-                            json.dump(json_dict, new_json)
-                with open('json/steam.json', 'w') as new_steam:
-                    json.dump(steam_dict, new_steam)
+                        json_dict = await async_load(file_name)
+                        await delete_dump(json_dict,
+                                          steam_game.app_id,
+                                          'json')
                 unsub_post = Embed("Successful!",
                                    "The channel has now unsubscribed from "
                                    f"{steam_game.name}!",
