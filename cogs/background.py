@@ -65,7 +65,7 @@ class Background:
                 await steam_game.fetch_sale()
                 await steam_game.gaben_pls()
                 await steam_game.sale_trigger()
-                async with open('badlog', 'a') as badlog:
+                async with aiofiles.open('badlog', 'a') as badlog:
                     await badlog.write(
                         str(datetime.datetime.now()) + ' Scrape \n')
 
