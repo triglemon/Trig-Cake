@@ -1,7 +1,6 @@
 # Trig-Cake
 
-## Trig Cake Demo #1
-https://www.youtube.com/watch?v=2U4AW6ogtl4
+## [Trig Cake Demo #1](https://www.youtube.com/watch?v=2U4AW6ogtl4)
 
 ![Trig-Cake](Logo.png)
 
